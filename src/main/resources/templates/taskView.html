@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="viewLabel" type="java.lang.String"*/-->
+<head th:replace="layout/fragments :: head(title=${viewLabel})">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active='Tasks', loggedIn='true')"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <h2 th:if="${order != null}" class="mb-4">Informacje o zamówieniu</h2>
+
+        <!--/*@thymesVar id="order" type="dealership.car.model.Order"*/-->
+        <div th:if="${order != null}" class="row">
+            <div class="col-2">
+                <h5>Klient</h5>
+                <p th:text="${order.owner.name}"></p>
+
+                <h5>Data zamówienia</h5>
+                <p th:text="${order.creationDateAsString}"></p>
+            </div>
+            <div class="col">
+                <h5>Status dla klienta</h5>
+                <p th:text="${order.clientOrderStatusEnum.description}"></p>
+            </div>
+            <div class="col">
+                <h5>Status roboczy</h5>
+                <p th:text="${order.orderStatusEnum.description}"></p>
+            </div>
+            <div class="col-6">
+                <h5>Informacje o pojeździe</h5>
+                <ul>
+                    <li>Model: <span th:text="${order.orderInfo.model}"></span></li>
+                    <li>Silnik: <span th:text="${order.orderInfo.engine}"></span></li>
+                    <li>Typ nadwozia: <span th:text="${order.orderInfo.bodyType}"></span></li>
+                    <li>Skrzynia biegów: <span th:text="${order.orderInfo.transmissionType}"></span></li>
+                    <li>Dodatkowe wyposażenie: <span th:text="${order.orderInfo.additionalEquipment}"></span></li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 class="mt-5 mb-4" th:text="${viewLabel}">Etykieta</h2>
+
+        <!--/*@thymesVar id="completeTaskModel" type="dealership.car.process.model.CompleteTasksModel"*/-->
+        <form class="form" th:action="@{/tasks}" th:object="${completeTaskModel}" method="post">
+
+            <input type="text" id="taskId" name="id" class="form-control" th:value="*{id}"/>
+
+            <!--/*@thymesVar id="formVal" type="dealership.car.process.model.CustomFormField"*/-->
+            <th:block th:each="formVal,iter : *{formValues}">
+                <th:block th:switch="${formVal.typeName}">
+                    <div class="form-row mb-3">
+                        <input hidden="hidden" th:field="*{formValues[__${iter.index}__].id}" th:value="${formVal.id}"/>
+                        <input hidden="hidden" th:field="*{formValues[__${iter.index}__].typeName}" th:value="${formVal.typeName}"/>
+                        <input hidden="hidden" th:field="*{formValues[__${iter.index}__].label}" th:value="${formVal.label}"/>
+
+                        <div th:case="'boolean'" class="custom-control custom-switch mb-2">
+                            <input class="custom-control-input" type="checkbox"
+                                   th:id="${formVal.id}"
+                                   th:value="${formVal.value}"
+                                   th:field="*{formValues[__${iter.index}__].value}"
+                                   />
+                            <label class="custom-control-label"
+                                   th:for="${formVal.id}"
+                                   th:text="${formVal.label}"></label>
+                        </div>
+                        <th:block th:case="'string'">
+                            <th:block th:switch="${formVal.getProperties().get('fieldType')}">
+                                <div th:case="textArea" class="form-group">
+                                    <label th:text="${formVal.label}" th:for="${formVal.id}"></label>
+                                    <textarea class="form-control" th:rows="${formVal.getProperties().get('numRows') != null ? formVal.getProperties().get('numRows') : 2}"
+                                              th:id="${formVal.id}"
+                                              th:value="${formVal.value}"
+                                              th:field="*{formValues[__${iter.index}__].value}"></textarea>
+                                </div>
+                                <div th:case="null" class="form-group">
+                                    <label th:text="${formVal.label}" th:for="${formVal.id}"></label>
+                                    <input class="form-control" type="text"
+                                           th:id="${formVal.id}"
+                                           th:value="${formVal.value}"
+                                           th:field="*{formValues[__${iter.index}__].value}" />
+                                </div>
+                            </th:block>
+                        </th:block>
+                    </div>
+                </th:block>
+            </th:block>
+
+            <div class="form-row pl-3 pr-3 mt-5">
+                <button class="btn btn-success btn-lg btn-block" type="submit">Zatwierdź</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+<script th:inline="javascript">
+
+    $('#taskId').hide();
+
+</script>
+</body>
+</html>

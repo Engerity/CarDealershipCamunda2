@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layout/fragments :: head(title='Tasks')">
+</head>
+
+<body>
+<nav th:replace="layout/fragments :: navbar(active='Tasks', loggedIn='true')"></nav>
+
+<div class="container">
+    <div th:replace="layout/fragments :: global_message(classappend='alert-success')"></div>
+
+    <h2>Moje zadania</h2>
+
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-bordered table-hover table-sm">
+                <thead class="text-center">
+                    <tr>
+                        <th scope="col">TaskID</th>
+                        <th scope="col">ProcessInstanceID</th>
+                        <th scope="col">Nazwa</th>
+                        <th scope="col">Użytkownik</th>
+                        <th scope="col">Operacje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="assignedTask : ${assignedTasks}">
+                        <td scope="row" name="my_taskId" th:text="${assignedTask.id}"></td>
+                        <td th:text="${assignedTask.processInstanceId}"></td>
+                        <td th:text="${assignedTask.name}"></td>
+                        <td th:text="${assignedTask.assignee}"></td>
+                        <td class="text-center">
+                            <form th:id="${'my_'+'complete_'+assignedTask.id}" th:action="@{/tasks}"
+                                  th:object="${completeTaskModel}" method="post">
+                                <input type="hidden" id="id" name="id" th:value="${assignedTask.id}"/>
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Zatwierdź <i class="far fa-check-square"></i></button>
+                            </form>
+                            <a th:id="${'my_'+'open_'+assignedTask.id}" class="btn btn-outline-success btn-sm"
+                               th:href="${'/tasks/open/'+assignedTask.id}" role="button">Otwórz <i class="far fa-edit"></i></a>
+
+                            <a th:id="${'my_'+'info_'+assignedTask.id}" class="btn btn-outline-info btn-sm"
+                               th:href="${'/tasks/info/'+assignedTask.id}" role="button">Info <i class="fas fa-info-circle"></i></a>
+
+                            <a class="btn btn-outline-danger btn-sm"
+                               th:id="${'my_'+'remove_'+assignedTask.id}"
+                               th:href="${'/client/delete/' + assignedTask.processInstanceId}" role="button">Usuń
+                                <i class="far fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <th:block th:if="${entry.value.size() > 0}" th:each="entry : ${taskInGroups.entrySet()}">
+        <h5 class="mt-4">Zadania w grupie <span th:text="${entry.key.label}">XYZ</span></h5>
+
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-bordered table-hover table-sm">
+                    <thead class="text-center">
+                        <tr>
+                            <th scope="col">TaskID</th>
+                            <th scope="col">ProcessInstanceID</th>
+                            <th scope="col">Nazwa</th>
+                            <th scope="col">Użytkownik</th>
+                            <th scope="col">Operacje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="candidateTask : ${entry.value}">
+                            <td scope="row" name="group_taskId" th:text="${candidateTask.id}"></td>
+                            <td th:text="${candidateTask.processInstanceId}"></td>
+                            <td th:text="${candidateTask.name}"></td>
+                            <td th:text="${candidateTask.assignee}"></td>
+                            <td class="text-center">
+                                <th:block th:if="${candidateTask.assignee.equals(#authentication.principal.username)}">
+                                    <form th:id="${'group_'+'complete_'+candidateTask.id}" th:action="@{/tasks}"
+                                          th:object="${completeTaskModel}" method="post">
+                                        <input type="hidden" id="id" name="id" th:value="${candidateTask.id}"/>
+                                        <button class="btn btn-outline-primary btn-sm" type="submit">Zatwierdź <i class="far fa-check-square"></i></button>
+                                    </form>
+                                    <a th:id="${'group_'+'open_'+candidateTask.id}" class="btn btn-outline-success btn-sm"
+                                       th:href="${'/tasks/open/'+candidateTask.id}" role="button">Otwórz <i class="far fa-edit"></i></a>
+
+                                    <a th:id="${'group_'+'info_'+candidateTask.id}" class="btn btn-outline-info btn-sm"
+                                       th:href="${'/tasks/info/'+candidateTask.id}" role="button">Info <i class="fas fa-info-circle"></i></a>
+
+                                    <a th:id="${'group_'+'remove_'+candidateTask.id}" class="btn btn-outline-danger btn-sm"
+                                       th:href="${'/client/delete/' + candidateTask.processInstanceId}" role="button">Usuń
+                                        <i class="far fa-trash-alt"></i></a>
+                                </th:block>
+                                <th:block th:if="${!candidateTask.assignee.equals(#authentication.principal.username)}">
+                                    <a th:id="${'group_'+'assigne_'+candidateTask.id}"
+                                       th:href="${'/tasks/assigne/'+candidateTask.id}"
+                                       class="btn btn-outline-warning btn-sm"
+                                       role="button">Przypisz do mnie <i class="far fa-flag"></i></a>
+
+                                    <a th:id="${'group_'+'info_'+candidateTask.id}" class="btn btn-outline-info btn-sm"
+                                       th:href="${'/tasks/info/'+candidateTask.id}" role="button">Info <i class="fas fa-info-circle"></i></a>
+                                </th:block>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </th:block>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+<script th:inline="javascript">
+    function showElement(elementId, isToShow) {
+        if (!elementId.startsWith("#")) {
+            elementId = "#" + elementId;
+        }
+        let elem = $(elementId);
+        if (elem) {
+            isToShow = isToShow === "true";
+            if (isToShow) {
+                $(elementId).show();
+            } else {
+                $(elementId).hide();
+            }
+        }
+    }
+
+    function loadConfig(taskId, prefix) {
+        $.ajax({
+            type: "GET",
+            url: "/tasks/config/" + taskId,
+            contentType: "application/json",
+            data: null,
+            cache: false,
+            timeout: 600000,
+            success: function (d) {
+                showElement(prefix + "open_" + taskId, d["isOpenAvailable"]);
+                showElement(prefix + "complete_" + taskId, d["isCompleteAvailable"]);
+                showElement(prefix + "remove_" + taskId, d["isRemoveAvailable"]);
+                showElement(prefix + "info_" + taskId, d["isInfoAvailable"]);
+            },
+            error: function (e) {
+                console.log("ERROR", e);
+            }
+        });
+    }
+
+    function config() {
+        let trs = $('td[name="my_taskId"]');
+        for (const tr of trs) {
+            loadConfig(tr.innerHTML, 'my_')
+        }
+        let trs2 = $('td[name="group_taskId"]');
+        for (const tr of trs2) {
+            loadConfig(tr.innerHTML, 'group_')
+        }
+    }
+
+    config();
+</script>
+
+</body>
+</html>

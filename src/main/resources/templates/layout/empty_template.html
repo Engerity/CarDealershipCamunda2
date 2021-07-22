@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/fragments :: head(title='UZUPEŁNIJ MNIE!')">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active='UZUPEŁNIJ MNIE!', loggedIn='true')"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <!-- UZUPEŁNIJ MNIE! -->
+
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+</body>
+</html>

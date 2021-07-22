@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org">
+
+<head th:fragment="head (title)">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <title th:text="${title}"></title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.0/css/bootstrap.min.css}"/>
+
+    <link rel="stylesheet" th:href="@{/css/custom.css}"/>
+
+    <link rel="stylesheet" th:href="@{/webjars/font-awesome/5.15.3/css/all.css}"/>
+    <script th:href="@{/webjars/font-awesome/5.15.3/js/all.js}"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top ">
+    <div class="navbar-brand">
+        <a th:href="@{/home}"> <img alt="" th:src="@{/img/greencar_120px.png}"/> </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <form class="form-inline ml-auto mr-3" th:if="${loggedIn == null}" th:action="@{/login}" method="post">
+            <input id="username" class="form-control mr-sm-2" name="username" placeholder="Login" required="required"
+                   autofocus="autofocus"/>
+            <input id="password" class="form-control mr-sm-2" name="password" type="password" placeholder="Hasło"
+                   required="required"/>
+            <button type="submit" class="btn btn-success">Login</button>
+        </form>
+
+
+        <ul th:if="${loggedIn}" class="navbar-nav mr-auto">
+            <li class="nav-item" th:classappend="${active == 'Home'} ? active">
+                <a class="nav-link" th:href="@{/home}">Home</a>
+            </li>
+            <li class="nav-item" th:classappend="${active == 'Konfigurator zamówieńa'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
+                <a class="nav-link" th:href="@{/client/}">Konfigurator zamówień</a>
+            </li>
+            <li class="nav-item" th:classappend="${active == 'Złożone zamówienia'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
+                <a class="nav-link" th:href="@{/client/orders/}">Złożone zamówienia</a>
+            </li>
+            <li class="nav-item" th:classappend="${active == 'Zamówienia'} ? active" sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_FACTORY_WORKER')">
+                <a class="nav-link" th:href="@{/orders/}">Zamówienia</a>
+            </li>
+            <li class="nav-item" th:classappend="${active == 'Tasks'} ? active">
+                <a class="nav-link" th:href="@{/tasks/}">Zadania</a>
+            </li>
+            <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                <a class="nav-link" th:href="@{/camunda/app/}" target="_blank"><span class="dropup"><span class="caret"></span></span>
+                    Camunda</a>
+            </li>
+            <!--<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                <a class="nav-link" th:href="@{/h2-console/}" target="_blank"><span class="dropup"><span class="caret"></span></span> H2 Console</a>
+            </li>-->
+        </ul>
+        <form th:if="${loggedIn}" class="form-inline my-2 my-lg-0">
+            <div class="btn-group" role="group">
+                <button id="btnUserAction" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                    <span th:if="${#authentication}" th:text="${#authentication.getPrincipal().getUsername()}"></span>
+                    <span class="caret"></span>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnUserAction">
+                    <a class="dropdown-item" th:href="@{/logout}">Logout</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</nav>
+
+<div th:fragment="global_message">
+    <div th:if="${globalMessage}" class="row">
+        <div class="col">
+            <p th:text="${globalMessage}" class="alert" th:classappend="${classappend}"/>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="bootstrap_js">
+    <!-- Bootstrap core JavaScript ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.0/js/bootstrap.bundle.js}"></script>
+    <script th:src="@{/js/customs.js}"></script>
+</div>
+</body>
+
+</html>

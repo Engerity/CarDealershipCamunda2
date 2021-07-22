@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/fragments :: head(title='Informacje')">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active='Tasks', loggedIn='true')"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <h2 th:if="${order != null}" class="mb-4">Informacje o zamówieniu</h2>
+
+        <!--/*@thymesVar id="order" type="dealership.car.model.Order"*/-->
+        <div th:if="${order != null}" class="row">
+            <div class="col-2">
+                <h5>Klient</h5>
+                <p th:text="${order.owner.name}"></p>
+
+                <h5>Data zamówienia</h5>
+                <p th:text="${order.creationDateAsString}"></p>
+            </div>
+            <div class="col">
+                <h5>Status dla klienta</h5>
+                <p th:text="${order.clientOrderStatusEnum.description}"></p>
+            </div>
+            <div class="col">
+                <h5>Status roboczy</h5>
+                <p th:text="${order.orderStatusEnum.description}"></p>
+            </div>
+            <div class="col-6">
+                <h5>Informacje o pojeździe</h5>
+                <ul>
+                    <li>Model: <span th:text="${order.orderInfo.model}"></span></li>
+                    <li>Silnik: <span th:text="${order.orderInfo.engine}"></span></li>
+                    <li>Typ nadwozia: <span th:text="${order.orderInfo.bodyType}"></span></li>
+                    <li>Skrzynia biegów: <span th:text="${order.orderInfo.transmissionType}"></span></li>
+                    <li>Dodatkowe wyposażenie: <span th:text="${order.orderInfo.additionalEquipment}"></span></li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 class="mt-5 mb-4">Pozostałe informacje (z procesu)</h2>
+        <table class="table table-bordered table-hover table-sm">
+            <thead class="text-center">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nazwa</th>
+                <th scope="col">Wartość</th>
+                <th scope="col">Typ</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!--/*@thymesVar id="variablesInfo" type="java.util.List<dealership.car.process.model.CustomFormField>"*/-->
+            <tr th:each="info,iter : ${variablesInfo}">
+                <th scope="row" th:text="${iter.index + 1}"></th>
+                <td th:text="${info.label}"></td>
+                <td th:text="${info.value}"></td>
+                <td th:text="${info.typeName}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+<script th:inline="javascript">
+
+    $('#taskId').hide();
+
+</script>
+</body>
+</html>

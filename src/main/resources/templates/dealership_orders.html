@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/fragments :: head(title='Lista zamówień')">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active='Lista zamówień', loggedIn='true')"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <h2 class="mb-5">Lista zamówień</h2>
+        <div class="row mt-3">
+            <div class="col">
+                <table id="summaryTable" class="table text-center">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Process ID</th>
+                        <th scope="col">Task ID</th>
+                        <th scope="col">Etap</th>
+                        <th scope="col">Operacje</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--/*@thymesVar id="carModels" type="java.util.Map<org.camunda.bpm.engine.task.Task, dealership.car.model.OrderModel>"*/-->
+                    <tr th:if="${!taskOrderModelMap.isEmpty()}" th:each="entry,iter: ${taskOrderModelMap}">
+                        <th scope="row" th:text="${iter.index + 1}"></th>
+                        <td th:text="${entry.getKey().processInstanceId}"></td>
+                        <td name="taskId" th:text="${entry.getKey().id}"></td>
+                        <td th:text="${entry.getKey().name}"></td>
+                        <td>
+                            <a class="btn btn-outline-success btn-sm"
+                               th:href="${'/client/edit/' + entry.getKey().processInstanceId}" role="button">Edytuj
+                                <i class="far fa-edit"></i></a>
+                            <a class="btn btn-outline-danger btn-sm"
+                               th:href="${'/client/delete/' + entry.getKey().processInstanceId}" role="button">Usuń
+                                <i class="far fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${taskOrderModelMap.isEmpty()}">
+                        <td colspan="5"> Brak zamówień -
+                            <a class="btn btn-outline-success btn-sm"
+                               th:href="@{/client/new}" role="button">Utwórz nowe <i class="far fa-plus-square"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+</body>
+</html>

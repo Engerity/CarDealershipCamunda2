@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/fragments :: head(title='Konfiguracja zamówienia')">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active='Bieżące zamówieni', loggedIn='true')"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <h2 class="mb-5">Konfiguracja nowego zamówienia</h2>
+
+        <!--/*@thymesVar id="orderModel" type="dealership.car.model.OrderModel"*/-->
+        <form class="form" th:action="@{/client}" th:object="${orderModel}" method="post">
+
+            <input type="text" id="orderId" name="orderId" class="form-control" th:value="*{orderId}" />
+            <input type="text" id="processId" name="processId" class="form-control" th:value="*{processId}" />
+            <input type="text" id="taskId" name="taskId"  class="form-control" th:value="*{taskId}" />
+            <input type="text" id="client" name="client"  class="form-control" th:value="*{client}" />
+
+            <div class="row" role="tabpanel">
+                <!-- List group -->
+                <div class="col-2 list-group" id="configList" role="tablist">
+                    <a class="list-group-item list-group-item-action active" data-toggle="list" href="#model-form"
+                       role="tab">Model</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#engine-form" role="tab">Silnik</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#bodyType-form"
+                       role="tab">Typ nadwozia</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#transmissionType-form"
+                       role="tab">Skrzynia biegów</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list"
+                       href="#additionalEquipment-form" role="tab">Dodatkowe wyposażenie</a>
+                    <a class="list-group-item list-group-item-action" data-toggle="list" href="#summary-form"
+                       role="tab">Podsumowanie</a>
+                </div>
+
+                <!-- Tab panes -->
+                <div class="col-10 tab-content">
+                    <div class="tab-pane active" id="model-form" role="tabpanel">
+                        <div class="row">
+                            <div class="col">
+                                <label for="modelSelect">Wybierz model samochodu</label>
+                                <select th:field="*{model}" class="form-control" id="modelSelect">
+                                    <option value=""></option>
+                                    <!--/*@thymesVar id="carModels" type="java.util.Map<String, String>"*/-->
+                                    <option th:each="entry: ${carModels}"
+                                            th:value="${entry.key}" th:text="${entry.value}"> </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row justify-content-end mt-3 pt-3">
+                            <div class="col-4 text-right">
+                                <button type="button" class="btn btn-outline-success" onclick="nextChild()">Dalej <i
+                                        class="fas fa-angle-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="engine-form" role="tabpanel">
+                        <div class="row">
+                            <div class="col">
+                                <label for="engineSelect">Wybierz rodzaj i moc silnika</label>
+                                <select th:field="*{engine}" class="form-control" id="engineSelect">
+                                    <option value=""></option>
+                                    <!--/*@thymesVar id="carEngines" type="java.util.Map<String, String>"*/-->
+                                    <option th:each="entry: ${carEngines}"
+                                            th:value="${entry.key}" th:text="${entry.value}"> </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row justify-content-between mt-3 pt-3">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-danger" onclick="prevChild()"><i
+                                        class="fas fa-angle-left"></i> Wstecz
+                                </button>
+                            </div>
+                            <div class="col-4 text-right">
+                                <button type="button" class="btn btn-outline-success" onclick="nextChild()">Dalej <i
+                                        class="fas fa-angle-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="bodyType-form" role="tabpanel">
+                        <div class="row">
+                            <div class="col">
+                                <label for="bodyTypeSelect">Wybierz typ nadwozia</label>
+                                <select th:field="*{bodyType}" class="form-control" id="bodyTypeSelect">
+                                    <option value=""></option>
+                                    <!--/*@thymesVar id="carBodyTypes" type="java.util.Map<String, String>"*/-->
+                                    <option th:each="entry: ${carBodyTypes}"
+                                            th:value="${entry.key}" th:text="${entry.value}"> </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row justify-content-between mt-3 pt-3">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-danger" onclick="prevChild()"><i
+                                        class="fas fa-angle-left"></i> Wstecz
+                                </button>
+                            </div>
+                            <div class="col-4 text-right">
+                                <button type="button" class="btn btn-outline-success" onclick="nextChild()">Dalej <i
+                                        class="fas fa-angle-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="transmissionType-form" role="tabpanel">
+                        <div class="row">
+                            <div class="col">
+                                <label for="transmissionTypeSelect">Wybierz skrzynię biegów</label>
+                                <select th:field="*{transmissionType}" class="form-control" id="transmissionTypeSelect">
+                                    <option value=""></option>
+                                    <!--/*@thymesVar id="carTransmissionTypes" type="java.util.Map<String, String>"*/-->
+                                    <option th:each="entry: ${carTransmissionTypes}"
+                                            th:value="${entry.key}" th:text="${entry.value}"> </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row justify-content-between mt-3 pt-3">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-danger" onclick="prevChild()"><i
+                                        class="fas fa-angle-left"></i> Wstecz
+                                </button>
+                            </div>
+                            <div class="col-4 text-right">
+                                <button type="button" class="btn btn-outline-success" onclick="nextChild()">Dalej <i
+                                        class="fas fa-angle-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="additionalEquipment-form" role="tabpanel">
+                        <div class="row">
+                            <div id="additionalEquipmentCheckboxes" class="col">
+                                <div class="row">
+                                    <div class="col">
+                                        <label>Wybierz dodatkowe wyposażenie</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <!--/*@thymesVar id="carTransmissionTypes" type="java.util.Map<String, String>"*/-->
+                                    <div class="col-6" th:each="entry : ${carAdditionalEquipments}">
+                                        <input type="checkbox" th:field="*{additionalEquipments}" th:value="${entry.key}"/>
+                                        <label th:text="${entry.value}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-between mt-3 pt-3">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-danger" onclick="prevChild()"><i
+                                        class="fas fa-angle-left"></i> Wstecz
+                                </button>
+                            </div>
+                            <div class="col-4 text-right">
+                                <button type="button" class="btn btn-outline-success" onclick="nextChild()">Dalej <i
+                                        class="fas fa-angle-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="summary-form" role="tabpanel">
+                        <div class="row">
+                            <div class="col">
+                                <h3>Podsumowanie</h3>
+                                <table id="summaryTable" class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Typ</th>
+                                        <th scope="col">Wartość</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row mb-3 pl-3 pr-3">
+                            <button type="submit"
+                                    class="btn btn-success btn-lg btn-block">Wyślij zamówienie
+                            </button>
+                        </div>
+
+                        <div class="row justify-content-start mt-3 pt-3">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-danger" onclick="prevChild()"><i
+                                        class="fas fa-angle-left"></i> Wstecz
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+<script th:inline="javascript">
+
+    $('#processId').hide();
+    $('#orderId').hide();
+    $('#taskId').hide();
+    $('#client').hide();
+
+    $('#configList').on('click', 'a', function() {
+        let elem = $(this)[0];
+        let elemNum = findElementNum(elem)
+        if (elemNum !== undefined)
+            handleChangeChild(currentChildNum(), elemNum);
+    });
+
+</script>
+</body>
+</html>

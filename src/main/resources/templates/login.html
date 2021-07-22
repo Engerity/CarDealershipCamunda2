@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layout/fragments :: head(title='Login')">
+</head>
+
+<body>
+<nav th:replace="layout/fragments :: navbar(active=null, loggedIn=null)"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <p th:if="${param.logout}" class="alert alert-success top-buffer-md">Wylogowano pomyślnie.</p>
+        <p th:if="${param.error}" class="alert alert-danger top-buffer-md">Błąd autoryzacji. Sprawdź swoje dane uwierzytelniające. .</p>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="active text-center" colspan="2">Ściągawka</th>
+                    </tr>
+                    <tr>
+                        <td th:attr="rowspan=${userList.size() > 0 ? 2: 1}"><strong>Główna aplikacja</strong></td>
+                        <td>
+                            <strong><a th:href="@{/register}">Nowy użytkownik</a></strong><br/><br/>
+                            <strong>Użytkownicy predefiniowani</strong>
+                            <table class="table table-striped table-condensed table-bordered top-buffer-sm">
+                                <tr>
+                                    <th>Użytkownik</th>
+                                    <th>Hasło</th>
+                                    <th>Uprawnienia</th>
+                                </tr>
+                                <tr>
+                                    <td>admin</td>
+                                    <td>admin</td>
+                                    <td>ROLE_ADMIN, ROLE_CLIENT, ROLE_DEALERSHIP, ROLE_FACTORY_WORKER</td>
+                                </tr>
+                                <tr>
+                                    <td>system</td>
+                                    <td>system</td>
+                                    <td>ROLE_CLIENT, ROLE_DEALERSHIP, ROLE_FACTORY_WORKER</td>
+                                </tr>
+                                <tr>
+                                    <td>kermit</td>
+                                    <td>kermit</td>
+                                    <td>ROLE_CLIENT</td>
+                                </tr>
+                                <tr>
+                                    <td>gonzo</td>
+                                    <td>gonzo</td>
+                                    <td>ROLE_CLIENT</td>
+                                </tr>
+                                <tr>
+                                    <td>salon</td>
+                                    <td>salon</td>
+                                    <td>ROLE_DEALERSHIP</td>
+                                </tr>
+                                <tr>
+                                    <td>fabryka</td>
+                                    <td>fabryka</td>
+                                    <td>ROLE_FACTORY_WORKER</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr th:if="${userList.size() > 0}">
+                        <td>
+                            <strong>Lista nowych użytkowników</strong>
+                            <table class="table table-striped table-condensed table-bordered top-buffer-sm">
+                                <tr>
+                                    <th>Użytkownik</th>
+                                    <th>Hasło</th>
+                                    <th>Uprawnienia</th>
+                                </tr>
+                                <tr th:each="usr : ${userList}">
+                                    <td th:text="${usr.getUsername()}"></td>
+                                    <td>****</td>
+                                    <td><span th:each="a,stat: ${usr.getAuthorities()}"
+                                              th:text="!${stat.last} ? ${a.getAuthority()} + ', ': ${a.getAuthority()}">
+                                    </span></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Camunda</strong></td>
+                        <td>
+                            <strong><a th:href="@{/camunda/app/welcome/default/}" th:text="@{/camunda/app/welcome/default/}"
+                                       target="_blank"></a></strong><br/>
+                            <strong><a th:href="@{/camunda/app/cockpit/default/}" th:text="@{/camunda/app/cockpit/default/}"
+                                       target="_blank"></a></strong><br/>
+                            <strong><a th:href="@{/camunda/app/tasklist/default/}" th:text="@{/camunda/app/tasklist/default/}"
+                                       target="_blank"></a></strong><br/>
+                            <strong><a th:href="@{/camunda/app/admin/default/}" th:text="@{/camunda/app/admin/default/}"
+                                       target="_blank"></a></strong>
+                            <table class="table table-striped table-condensed table-bordered top-buffer-sm">
+                                <tr>
+                                    <th>User</th>
+                                    <th>Password</th>
+                                </tr>
+                                <tr>
+                                    <td>admin</td>
+                                    <td>admin</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+</body>
+</html>

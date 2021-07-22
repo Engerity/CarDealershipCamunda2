@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org">
+<head th:replace="layout/fragments :: head(title=${viewLabel})">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active=${viewLabel}, loggedIn='true')"></nav>
+
+<div class="container">
+    <div class="content">
+        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+
+        <h2 class="mb-5" th:text="${viewLabel}">Etykieta</h2>
+
+        <div class="row justify-content-end">
+            <div class="col">
+                <a th:href="${urlActiveStatuses}" role="button" class="btn btn-outline-primary btn-sm">Aktywne</a>
+                <a th:href="${urlNotActiveStatuses}" role="button" class="btn btn-outline-secondary btn-sm">Nieaktywne</a>
+                <a th:href="${urlPath}" role="button" class="btn btn-outline-dark btn-sm">Wszystkie</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <table id="summaryTable" class="table text-center">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Klient</th>
+                        <th scope="col">Data zamówienia</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_FACTORY_WORKER')">Status roboczy</th>
+                        <th scope="col">Szczegóły zamówienia</th>
+                        <th scope="col">Operacje</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--/*@thymesVar id="orders" type="java.util.List<dealership.car.model.Order>"*/-->
+                    <tr th:each="order: ${orders}">
+                        <th scope="row" th:text="${order.id}"></th>
+                        <td th:text="${order.owner.name}"></td>
+                        <td th:text="${order.creationDateAsString}"></td>
+                        <td th:text="${order.clientOrderStatusEnum.description}"></td>
+                        <td  th:text="${order.orderStatusEnum.description}" sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_FACTORY_WORKER')"></td>
+                        <td>
+                            <ul style="list-style-type:none;">
+                                <li>Model: <span th:text="${order.orderInfo.model}"></span></li>
+                                <li>Silnik: <span th:text="${order.orderInfo.engine}"></span></li>
+                                <li>Typ nadwozia: <span th:text="${order.orderInfo.bodyType}"></span></li>
+                                <li>Skrzynia biegów: <span th:text="${order.orderInfo.transmissionType}"></span></li>
+                                <li>Dodatkowe wyposażenie: <span
+                                        th:text="${order.orderInfo.additionalEquipment}"></span></li>
+                            </ul>
+                        </td>
+                        <td>
+                            <a th:if="${order.orderInfo.processId != null}" th:id="${'info_'+order.orderInfo.processId}" class="btn btn-outline-info btn-sm"
+                               th:href="${'/process/info/'+order.orderInfo.processId}" role="button">Info <i class="fas fa-info-circle"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+</body>
+</html>
