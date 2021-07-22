@@ -140,6 +140,7 @@ public class ClientOrderController extends AbstractController {
         camundaProcessService.setVariable(orderModel.getProcessId(), "orderData", orderModel);
         camundaProcessService.setVariable(orderModel.getProcessId(), "orderId", orderModel.getOrderId());
         camundaProcessService.setVariable(orderModel.getProcessId(), "clientProcessId", orderModel.getProcessId());
+        camundaProcessService.setVariable(orderModel.getProcessId(), "client", orderModel.getClient());
         camundaProcessService.completeTask(orderModel.getTaskId(), variables);
 
         redirect.addFlashAttribute("globalMessage", "Successfully completed task id " + orderModel.getTaskId() + ".");

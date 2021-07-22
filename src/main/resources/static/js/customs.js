@@ -120,6 +120,32 @@ function handleChangeChild(currentNum, newNum) {
             $('#summaryTable tbody').append('<tr> <td>Rodzaj nadwozia</td> <td>' + bodyType + '</td> </tr>');
             $('#summaryTable tbody').append('<tr> <td>Typ skrzyni biegów</td> <td>' + transmissionType + '</td> </tr>');
             $('#summaryTable tbody').append('<tr> <td>Dodatkowe wyposażenie</td> <td>' + additionalEquipments.join(", ") + '</td> </tr>');
+
+            if (model && engine && bodyType && transmissionType) {
+                $('#submitOrder').attr('disabled', false);
+            } else {
+                var fields = '';
+                if (!model)
+                    fields += 'Model';
+
+                if (!engine) {
+                    if (fields) fields += ', ';
+                    fields += 'Silnik';
+                }
+                if (!bodyType) {
+                    if (fields) fields += ', ';
+                    fields += 'Typ nadwozia';
+                }
+                if (!transmissionType) {
+                    if (fields) fields += ', ';
+                    fields += 'Typ skrzyni biegów';
+                }
+
+                fields = fields.replace(/,(?=[^,]*$)/, ' i');
+
+                $('#summaryTable tbody').append('<tr class="text-danger text-center"> <td colspan="2">Nie wypełniono wymaganych pól: <strong>'+ fields + '</strong>!</td> </tr>');
+                $('#submitOrder').attr('disabled', true);
+            }
         }
     }
 }

@@ -34,12 +34,12 @@
         </button>
     </div>
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <form class="form-inline ml-auto mr-3" th:if="${loggedIn == null}" th:action="@{/login}" method="post">
-            <input id="username" class="form-control mr-sm-2" name="username" placeholder="Login" required="required"
+        <form class="form-inline my-2 ml-auto mr-3" th:if="${loggedIn == null}" th:action="@{/login}" method="post">
+            <input id="username" class="form-control my-1 mr-sm-2" name="username" placeholder="Login" required="required"
                    autofocus="autofocus"/>
-            <input id="password" class="form-control mr-sm-2" name="password" type="password" placeholder="Hasło"
+            <input id="password" class="form-control my-1 mr-sm-2" name="password" type="password" placeholder="Hasło"
                    required="required"/>
-            <button type="submit" class="btn btn-success">Login</button>
+            <button type="submit" class="btn btn-success my-2">Login</button>
         </form>
 
 

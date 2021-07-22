@@ -1,9 +1,9 @@
 package dealership.car.camunda.service.client;
 
 import dealership.car.camunda.service.BaseJavaDelegate;
-import dealership.car.model.OrderModel;
 import dealership.car.model.OrderStatusEnum;
 import dealership.car.model.RoleEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +25,13 @@ public class ReceiveMessageClientService extends BaseJavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         super.execute(delegateExecution);
         camundaProcessService.setVariable(delegateExecution.getProcessInstanceId(),"userGroup", RoleEnum.ROLE_CLIENT.getValue());
+       /*
         OrderModel orderModel = (OrderModel) delegateExecution.getVariable("orderData");
         if (orderModel != null)
-            camundaProcessService.setVariable(delegateExecution.getProcessInstanceId(),"assignee", orderModel.getClient());
+            camundaProcessService.setVariable(delegateExecution.getProcessInstanceId(),"assignee", orderModel.getClient());*/
+
+        String client = (String) delegateExecution.getVariable("client");
+        if (StringUtils.isNotBlank(client))
+            camundaProcessService.setVariable(delegateExecution.getProcessInstanceId(),"assignee", client);
     }
 }
