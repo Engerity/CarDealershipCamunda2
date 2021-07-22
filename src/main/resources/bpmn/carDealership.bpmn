@@ -1,0 +1,1050 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_037rvpt" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.8.1">
+  <bpmn:collaboration id="Collaboration_16ikafs">
+    <bpmn:participant id="Participant_1stwjmk" name="Klient" processRef="CAR_DEALERSHIP_KLIENT" />
+    <bpmn:participant id="Participant_019rtvj" name="Salon samochodowy" processRef="CAR_DEALERSHIP_SALON" />
+    <bpmn:participant id="Participant_1p8kbk3" name="Fabryka" processRef="CAR_DEALERSHIP_FACTORY" />
+    <bpmn:messageFlow id="Flow_1uuc7ou" sourceRef="Activity_1eoly0v" targetRef="Fabryka_Start" />
+    <bpmn:messageFlow id="Flow_18xshp5" sourceRef="Fabryka_WyslanieInformacjiDoSalonu" targetRef="Event_1b01djz" />
+    <bpmn:messageFlow id="Flow_0mex7uu" sourceRef="Klient_WyslanieZamowienia" targetRef="Salon_Start" />
+    <bpmn:messageFlow id="Flow_0hupi12" sourceRef="Event_0kxyq8d" targetRef="Salon_OdebranieSamochodu_Message" />
+    <bpmn:messageFlow id="Flow_1qy2p1l" sourceRef="Salon_WyslanieInfoDoKlienta" targetRef="Klient_OczekiwanieNaZamowienie" />
+  </bpmn:collaboration>
+  <bpmn:process id="CAR_DEALERSHIP_KLIENT" name="Car Dealership (Klient)" isExecutable="true">
+    <bpmn:userTask id="Klient_OdebranieSamochodu" name="Odebranie samochodu" camunda:formKey="taskView" camunda:assignee="${orderData.client}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="feedbackFromClient" label="Opinia nt. zamówienia" type="string">
+            <camunda:properties>
+              <camunda:property id="fieldType" value="textArea" />
+              <camunda:property id="numRows" value="3" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:taskListener delegateExpression="${orderComplete}" event="complete" id="OrderComplete" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0p54urb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1z0cv6z</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="Event_13ynu74" name="Rozpoczęcie zamówienia">
+      <bpmn:outgoing>Flow_1acdvot</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Klient_ZlozenieZamowienia" name="Złożenie zamówienia" camunda:assignee="${assignee}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="orderData">${orderData}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_10g07bx</bpmn:incoming>
+      <bpmn:outgoing>Flow_06mjwsu</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Klient_WyslanieZamowienia" name="Wysłanie zamówienia" camunda:delegateExpression="${sendMessageDelegate}">
+      <bpmn:extensionElements>
+        <camunda:field name="messageName">
+          <camunda:string>AskDealershipMessage</camunda:string>
+        </camunda:field>
+        <camunda:field name="startProcess">
+          <camunda:string>true</camunda:string>
+        </camunda:field>
+        <camunda:field name="newOrderStatus">
+          <camunda:string>SentToDealership</camunda:string>
+        </camunda:field>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_06mjwsu</bpmn:incoming>
+      <bpmn:outgoing>Flow_1deqyxk</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:subProcess id="Klient_Konfiguracja" name="Konfiguracja">
+      <bpmn:incoming>Flow_1acdvot</bpmn:incoming>
+      <bpmn:outgoing>Flow_10g07bx</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_0z0inah" sourceRef="Klient_Konfiguracja_Model" targetRef="Klient_Konfiguracja_Silnik" />
+      <bpmn:sequenceFlow id="Flow_0wyqfm4" sourceRef="Klient_Konfiguracja_Silnik" targetRef="Klient_Konfiguracja_TypNadwozia" />
+      <bpmn:sequenceFlow id="Flow_0ji1hqm" sourceRef="Klient_Konfiguracja_TypNadwozia" targetRef="Klient_Konfiguracja_SkrzyniaBiegow" />
+      <bpmn:sequenceFlow id="Flow_0dkx2f6" sourceRef="Klient_Konfiguracja_SkrzyniaBiegow" targetRef="Klient_Konfiguracja_WyposazenieDodatkowe" />
+      <bpmn:startEvent id="Event_1yyhf9t">
+        <bpmn:outgoing>Flow_1v6tyn2</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="Flow_1v6tyn2" sourceRef="Event_1yyhf9t" targetRef="Klient_Konfiguracja_Model" />
+      <bpmn:endEvent id="Event_1ejmm5y">
+        <bpmn:incoming>Flow_0t4s1fg</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0t4s1fg" sourceRef="Klient_Konfiguracja_WyposazenieDodatkowe" targetRef="Event_1ejmm5y" />
+      <bpmn:userTask id="Klient_Konfiguracja_Model" name="Model" camunda:assignee="${assignee}">
+        <bpmn:incoming>Flow_1v6tyn2</bpmn:incoming>
+        <bpmn:outgoing>Flow_0z0inah</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Klient_Konfiguracja_Silnik" name="Silnik" camunda:assignee="${assignee}">
+        <bpmn:incoming>Flow_0z0inah</bpmn:incoming>
+        <bpmn:outgoing>Flow_0wyqfm4</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Klient_Konfiguracja_TypNadwozia" name="Typ nadowzia" camunda:assignee="${assignee}">
+        <bpmn:incoming>Flow_0wyqfm4</bpmn:incoming>
+        <bpmn:outgoing>Flow_0ji1hqm</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Klient_Konfiguracja_SkrzyniaBiegow" name="Skrzynia biegów" camunda:assignee="${assignee}">
+        <bpmn:incoming>Flow_0ji1hqm</bpmn:incoming>
+        <bpmn:outgoing>Flow_0dkx2f6</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Klient_Konfiguracja_WyposazenieDodatkowe" name="Wyposażenie dodatkowe" camunda:assignee="${assignee}">
+        <bpmn:incoming>Flow_0dkx2f6</bpmn:incoming>
+        <bpmn:outgoing>Flow_0t4s1fg</bpmn:outgoing>
+      </bpmn:userTask>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_062qcqg" sourceRef="Klient_OdebranieOdrzucenia" targetRef="Klient_Zakonczenie" />
+    <bpmn:sequenceFlow id="Flow_1deqyxk" sourceRef="Klient_WyslanieZamowienia" targetRef="Klient_OczekiwanieNaZamowienie" />
+    <bpmn:sequenceFlow id="Flow_1z0cv6z" sourceRef="Klient_OdebranieSamochodu" targetRef="Klient_Zakonczenie" />
+    <bpmn:sequenceFlow id="Flow_06mjwsu" sourceRef="Klient_ZlozenieZamowienia" targetRef="Klient_WyslanieZamowienia" />
+    <bpmn:sequenceFlow id="Flow_10g07bx" sourceRef="Klient_Konfiguracja" targetRef="Klient_ZlozenieZamowienia" />
+    <bpmn:sequenceFlow id="Flow_1acdvot" sourceRef="Event_13ynu74" targetRef="Klient_Konfiguracja" />
+    <bpmn:sequenceFlow id="Flow_0p54urb" sourceRef="Klient_OczekiwanieNaZamowienie" targetRef="Klient_OdebranieSamochodu" />
+    <bpmn:receiveTask id="Klient_OczekiwanieNaZamowienie" name="Oczekiwanie na zamówienie" messageRef="WaitingForCollection">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${receiveMessageClientService}" event="end" />
+        <camunda:inputOutput>
+          <camunda:outputParameter name="assignee">${orderData.client}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1deqyxk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0p54urb</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:boundaryEvent id="Klient_OdebranieOdrzucenia" name="Odebranie odrzucenia zamówienia" attachedToRef="Klient_OczekiwanieNaZamowienie">
+      <bpmn:outgoing>Flow_062qcqg</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0v887h6" messageRef="OrderReject" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="Klient_Zakonczenie" name="Zamknięcie zamówienia">
+      <bpmn:incoming>Flow_1z0cv6z</bpmn:incoming>
+      <bpmn:incoming>Flow_062qcqg</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:process id="CAR_DEALERSHIP_SALON" name="Car Dealership (Salon)" isExecutable="true">
+    <bpmn:userTask id="Salon_RezerwacjaSamoochodu" name="Rezerwacja samochodu" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="annotation" label="Adnotacje" type="string">
+            <camunda:properties>
+              <camunda:property id="fieldType" value="textArea" />
+              <camunda:property id="numRows" value="3" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:taskListener delegateExpression="${inProcess}" event="complete" id="InProcess" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_193hndg</bpmn:incoming>
+      <bpmn:outgoing>Flow_0p0u6lg</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_0osccbx" name="Czy samochód dostępny w innym salonie?">
+      <bpmn:incoming>Flow_1mndl2w</bpmn:incoming>
+      <bpmn:outgoing>Flow_193hndg</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1or79a1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Salon_ZlozenieZamowienia" name="Złożenie zamówienia w fabryce" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="messageToFactory" label="Dodatkowe informacje dla fabryki" type="string">
+            <camunda:properties>
+              <camunda:property id="fieldType" value="textArea" />
+              <camunda:property id="numRows" value="3" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1or79a1</bpmn:incoming>
+      <bpmn:outgoing>Flow_01lz2qy</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Salon_CzySamochodDostepnyWSalonie" name="Czy samochód dostępny w salonie?">
+      <bpmn:incoming>Flow_1bbohxe</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xqlx9v</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1mndl2w</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Salon_Przyjecie" name="Przyjęcie zamówienia" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="carAvailable" label="Czy samochód dostępny w salonie?" type="boolean" defaultValue="true" />
+          <camunda:formField id="carAvailableInOtherDealership" label="Czy samochód dostępny w innym salonie?" type="boolean" defaultValue="true" />
+        </camunda:formData>
+        <camunda:properties>
+          <camunda:property />
+        </camunda:properties>
+        <camunda:taskListener delegateExpression="${orderAcceptance}" event="complete" id="OrderAcceptance" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0hxzd24</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bbohxe</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="Salon_Start" name="Odebranie zamówienia">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${runDealershipService}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0hxzd24</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1ldh4ug" messageRef="AskDealership" />
+    </bpmn:startEvent>
+    <bpmn:sendTask id="Activity_1eoly0v" name="Wysłanie zamówienia do fabryki" camunda:delegateExpression="${sendMessageDelegate}">
+      <bpmn:extensionElements>
+        <camunda:field name="messageName">
+          <camunda:string>AskFactoryMessage</camunda:string>
+        </camunda:field>
+        <camunda:field name="startProcess">
+          <camunda:string>true</camunda:string>
+        </camunda:field>
+        <camunda:field name="newOrderStatus">
+          <camunda:string>SentToFactory</camunda:string>
+        </camunda:field>
+        <camunda:executionListener delegateExpression="${sendMessageToFactory}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0e2zavl</bpmn:incoming>
+    </bpmn:sendTask>
+    <bpmn:parallelGateway id="Gateway_0d05rrb">
+      <bpmn:incoming>Flow_01lz2qy</bpmn:incoming>
+      <bpmn:outgoing>Flow_0e2zavl</bpmn:outgoing>
+      <bpmn:outgoing>Flow_14912vv</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:exclusiveGateway id="Gateway_040mdww" name="Czy samochód dostępny w fabryce?">
+      <bpmn:incoming>Flow_04a333u</bpmn:incoming>
+      <bpmn:outgoing>Flow_1jsrejh</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0y9ufqj</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Salon_PrzygotowanieDoTransportu" name="Przygotowanie samochodu do transportu">
+      <bpmn:incoming>Flow_0p0u6lg</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ihxqnq</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="Event_1b01djz" name="Oczekiwanie akceptację zamówienia">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${receiveFactoryMessageService}" event="end" />
+        <camunda:inputOutput>
+          <camunda:outputParameter name="assignee">${orderData.client}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_14912vv</bpmn:incoming>
+      <bpmn:outgoing>Flow_04a333u</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1n8iild" messageRef="ResponseFactory" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0m10n9h" sourceRef="Salon_GotoweDoOdbioru" targetRef="Salon_WyslanieInfoDoKlienta" />
+    <bpmn:sequenceFlow id="Flow_0tgcdq7" sourceRef="Salon_OdrzucenieZamwoienia" targetRef="Event_0nkyylz" />
+    <bpmn:sequenceFlow id="Flow_0smc25g" sourceRef="Salon_OdebranieSamochodu_Message" targetRef="Salon_OdebranieSamochodu" />
+    <bpmn:sequenceFlow id="Flow_14912vv" sourceRef="Gateway_0d05rrb" targetRef="Event_1b01djz" />
+    <bpmn:sequenceFlow id="Flow_0e2zavl" sourceRef="Gateway_0d05rrb" targetRef="Activity_1eoly0v" />
+    <bpmn:sequenceFlow id="Flow_01lz2qy" sourceRef="Salon_ZlozenieZamowienia" targetRef="Gateway_0d05rrb" />
+    <bpmn:sequenceFlow id="Flow_0xzmmgl" sourceRef="Salon_KontrolaJakosci" targetRef="Salon_PrzygotowanieSamochodu" />
+    <bpmn:sequenceFlow id="Flow_1jsrejh" name="Tak" sourceRef="Gateway_040mdww" targetRef="Salon_OczekiwanieNaSamochod">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailableInProduction}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0y9ufqj" name="Nie" sourceRef="Gateway_040mdww" targetRef="Salon_OdrzucenieZamwoienia">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInProduction}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0nlezkx" sourceRef="Salon_PrzygotowanieSamochodu" targetRef="Salon_GotoweDoOdbioru" />
+    <bpmn:sequenceFlow id="Flow_0xqlx9v" name="Tak" sourceRef="Salon_CzySamochodDostepnyWSalonie" targetRef="Salon_PrzygotowanieSamochodu">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailable}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1bbohxe" sourceRef="Salon_Przyjecie" targetRef="Salon_CzySamochodDostepnyWSalonie" />
+    <bpmn:sequenceFlow id="Flow_0hxzd24" sourceRef="Salon_Start" targetRef="Salon_Przyjecie" />
+    <bpmn:sequenceFlow id="Flow_1mndl2w" name="Nie" sourceRef="Salon_CzySamochodDostepnyWSalonie" targetRef="Gateway_0osccbx">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailable}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_193hndg" name="Tak" sourceRef="Gateway_0osccbx" targetRef="Salon_RezerwacjaSamoochodu">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailableInOtherDealership}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1ihxqnq" sourceRef="Salon_PrzygotowanieDoTransportu" targetRef="Salon_TransportSamochodu" />
+    <bpmn:sequenceFlow id="Flow_01bws94" sourceRef="Salon_TransportSamochodu" targetRef="Salon_KontrolaJakosci" />
+    <bpmn:sequenceFlow id="Flow_0p0u6lg" sourceRef="Salon_RezerwacjaSamoochodu" targetRef="Salon_PrzygotowanieDoTransportu" />
+    <bpmn:sequenceFlow id="Flow_1or79a1" name="Nie" sourceRef="Gateway_0osccbx" targetRef="Salon_ZlozenieZamowienia">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInOtherDealership}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_04a333u" sourceRef="Event_1b01djz" targetRef="Gateway_040mdww" />
+    <bpmn:userTask id="Salon_TransportSamochodu" name="Transport samochodu" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${inTransport}" event="create" id="InTransport" />
+        <camunda:formData>
+          <camunda:formField id="transportAnnotation" label="Adnotacje" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ihxqnq</bpmn:incoming>
+      <bpmn:outgoing>Flow_01bws94</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1lwswei" sourceRef="Salon_OczekiwanieNaSamochod" targetRef="Salon_OdebranieSamochodu_Message" />
+    <bpmn:sequenceFlow id="Flow_13ppjxs" sourceRef="Salon_OdebranieSamochodu" targetRef="Salon_KontrolaJakosci" />
+    <bpmn:receiveTask id="Salon_OdebranieSamochodu_Message" name="Odebranie samochodu" messageRef="TransportFromFactory">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${receiveCarFromFactoryService}" event="end" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1lwswei</bpmn:incoming>
+      <bpmn:outgoing>Flow_0smc25g</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:endEvent id="Event_0nkyylz" name="Samochód niedostępny">
+      <bpmn:incoming>Flow_0tgcdq7</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0sar7nw" messageRef="OrderReject" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>OrderRejectMessage</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>Rejected</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>clientProcessId</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Salon_OdrzucenieZamwoienia" name="Odrzucenie zamówienia" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${dealershipOrderReject}" event="complete" id="DealershipOrderReject" />
+        <camunda:formData>
+          <camunda:formField id="rejectMessage" label="Wiadomość do klienta (powód odrzucenia)" type="string" defaultValue="Brak dostępnego modelu lub wariantu" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0y9ufqj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tgcdq7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Salon_OczekiwanieNaSamochod" name="Oczekiwanie na samochód">
+      <bpmn:incoming>Flow_1jsrejh</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lwswei</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Salon_KontrolaJakosci" name="Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="comments" label="Komentarz do kontroli" type="string" defaultValue="Brak uwag">
+            <camunda:properties>
+              <camunda:property id="filedType" value="textArea" />
+              <camunda:property id="numRows" value="5" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:taskListener delegateExpression="${dealershipControlQuality}" event="complete" id="DealershipControlQuality" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_01bws94</bpmn:incoming>
+      <bpmn:incoming>Flow_13ppjxs</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xzmmgl</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Salon_WyslanieInfoDoKlienta" name="Wysłanie informacji do klienta">
+      <bpmn:incoming>Flow_0m10n9h</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0bj9i2w" messageRef="WaitingForCollection" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>WaitingForCollectionMessage</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>WaitingForCollection</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>clientProcessId</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Salon_PrzygotowanieSamochodu" name="Przygotowanie samochodu do wydania" camunda:delegateExpression="${preparationForCollection}">
+      <bpmn:incoming>Flow_0xqlx9v</bpmn:incoming>
+      <bpmn:incoming>Flow_0xzmmgl</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nlezkx</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Salon_GotoweDoOdbioru" name="Gotowe do odbioru" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="informationForCustomer" label="Informacje dla zamawiajacego" type="string" defaultValue="Samochód gotowy do odbioru.">
+            <camunda:properties>
+              <camunda:property id="fieldType" value="textArea" />
+              <camunda:property id="numRows" value="5" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:taskListener delegateExpression="${waitingForCollection}" event="complete" id="WaitingForCollection" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0nlezkx</bpmn:incoming>
+      <bpmn:outgoing>Flow_0m10n9h</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Salon_OdebranieSamochodu" name="Potwierdzenie odebrania samochodu" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:incoming>Flow_0smc25g</bpmn:incoming>
+      <bpmn:outgoing>Flow_13ppjxs</bpmn:outgoing>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmn:process id="CAR_DEALERSHIP_FACTORY" name="Car Dealership (Fabryka)" isExecutable="true">
+    <bpmn:parallelGateway id="Gateway_0tr6d1v">
+      <bpmn:incoming>Flow_00ya6db</bpmn:incoming>
+      <bpmn:outgoing>Flow_01uw2at</bpmn:outgoing>
+      <bpmn:outgoing>Flow_09xeyth</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:exclusiveGateway id="Gateway_12b2859" name="Czy dostępna bazowa konfiguracja?">
+      <bpmn:incoming>Flow_1izxqma</bpmn:incoming>
+      <bpmn:outgoing>Flow_00ya6db</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0wc9b6p</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:startEvent id="Fabryka_Start" name="Odebranie zamówienia">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${runFactoryService}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0tzotny</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_AskFactory" messageRef="AskFactory" />
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="Gateway_0sgthmr" name="Czy samochód dostępny na stanie?">
+      <bpmn:incoming>Flow_01l4adq</bpmn:incoming>
+      <bpmn:outgoing>Flow_09aslhz</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1izxqma</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0co6ne6" name="Czy możliwa produkcja bazowa?">
+      <bpmn:incoming>Flow_0wc9b6p</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ikpwh0</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0fdgvbw</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:parallelGateway id="Gateway_0x9pqw4">
+      <bpmn:incoming>Flow_09aslhz</bpmn:incoming>
+      <bpmn:outgoing>Flow_171ojmi</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1wuoupn</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:parallelGateway id="Gateway_1edptr2">
+      <bpmn:incoming>Flow_0ikpwh0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ib027s</bpmn:outgoing>
+      <bpmn:outgoing>Flow_15xhp5h</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:parallelGateway id="Gateway_1ixyxnd">
+      <bpmn:incoming>Flow_0fdgvbw</bpmn:incoming>
+      <bpmn:outgoing>Flow_13959jw</bpmn:outgoing>
+      <bpmn:outgoing>Flow_03olu67</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:userTask id="Fabryka_PrzyjecieZamowienia" name="Przyjęcie zamówienia na samochód" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="factoryAnnotation" label="Adnotacje" type="string" />
+          <camunda:formField id="carAvailableInFactory" label="Czy samochód dostępny na stanie?" type="boolean" defaultValue="true" />
+          <camunda:formField id="baseConstructionAvailable" label="Czy dostępna bazowa konfiguracja?" type="boolean" defaultValue="true" />
+          <camunda:formField id="productionPossible" label="Czy możliwa produkcja?" type="boolean" defaultValue="true" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0tzotny</bpmn:incoming>
+      <bpmn:outgoing>Flow_01l4adq</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Fabryka_ProdukcjaBazowa" name="Produkcja bazowa" camunda:delegateExpression="${baseProductionService}">
+      <bpmn:incoming>Flow_15xhp5h</bpmn:incoming>
+      <bpmn:outgoing>Flow_0y0oss7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Fabryka_ProdukcjaWyposazenia" name="Produkcja w dziale wyposażenia" camunda:delegateExpression="${equipmentProductionService}">
+      <bpmn:incoming>Flow_09xeyth</bpmn:incoming>
+      <bpmn:incoming>Flow_0y0oss7</bpmn:incoming>
+      <bpmn:outgoing>Flow_11w470t</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0fdgvbw" name="Nie" sourceRef="Gateway_0co6ne6" targetRef="Gateway_1ixyxnd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${not productionPossible}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0y0oss7" sourceRef="Fabryka_ProdukcjaBazowa" targetRef="Fabryka_ProdukcjaWyposazenia" />
+    <bpmn:sequenceFlow id="Flow_15xhp5h" sourceRef="Gateway_1edptr2" targetRef="Fabryka_ProdukcjaBazowa" />
+    <bpmn:sequenceFlow id="Flow_0ib027s" sourceRef="Gateway_1edptr2" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_0wc9b6p" name="Nie" sourceRef="Gateway_12b2859" targetRef="Gateway_0co6ne6">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not baseConstructionAvailable}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0ikpwh0" name="Tak" sourceRef="Gateway_0co6ne6" targetRef="Gateway_1edptr2">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${productionPossible}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_11w470t" sourceRef="Fabryka_ProdukcjaWyposazenia" targetRef="Fabryka_KontrolaJakosci" />
+    <bpmn:sequenceFlow id="Flow_09xeyth" sourceRef="Gateway_0tr6d1v" targetRef="Fabryka_ProdukcjaWyposazenia" />
+    <bpmn:sequenceFlow id="Flow_01uw2at" sourceRef="Gateway_0tr6d1v" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_00ya6db" name="Tak" sourceRef="Gateway_12b2859" targetRef="Gateway_0tr6d1v">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{baseConstructionAvailable}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1izxqma" name="Nie" sourceRef="Gateway_0sgthmr" targetRef="Gateway_12b2859">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInFactory}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1wuoupn" sourceRef="Gateway_0x9pqw4" targetRef="Fabryka_KontrolaJakosci" />
+    <bpmn:sequenceFlow id="Flow_171ojmi" sourceRef="Gateway_0x9pqw4" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_09aslhz" name="Tak" sourceRef="Gateway_0sgthmr" targetRef="Gateway_0x9pqw4">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailableInFactory}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_01l4adq" sourceRef="Fabryka_PrzyjecieZamowienia" targetRef="Gateway_0sgthmr" />
+    <bpmn:sequenceFlow id="Flow_1xseiw0" sourceRef="Fabryka_KontrolaJakosci" targetRef="Fabryka_TransportSamochoduDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_0tzotny" sourceRef="Fabryka_Start" targetRef="Fabryka_PrzyjecieZamowienia" />
+    <bpmn:sequenceFlow id="Flow_13959jw" sourceRef="Gateway_1ixyxnd" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_03olu67" sourceRef="Gateway_1ixyxnd" targetRef="Event_0y8uv7x" />
+    <bpmn:sequenceFlow id="Flow_10htd3c" sourceRef="Fabryka_TransportSamochoduDoSalonu" targetRef="Event_0kxyq8d" />
+    <bpmn:endEvent id="Event_0y8uv7x" name="Brak możliwości dostarczenia samochodu">
+      <bpmn:incoming>Flow_03olu67</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Fabryka_KontrolaJakosci" name="Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="factoryComments" label="Komentarz do kontroli" type="string" defaultValue="Brak uwag">
+            <camunda:properties>
+              <camunda:property id="fieldType" value="textArea" />
+              <camunda:property id="numRows" value="5" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:taskListener delegateExpression="${factoryControlQuality}" event="complete" id="FactoryControlQuality" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1wuoupn</bpmn:incoming>
+      <bpmn:incoming>Flow_11w470t</bpmn:incoming>
+      <bpmn:outgoing>Flow_1xseiw0</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Fabryka_WyslanieInformacjiDoSalonu" name="Wysłanie informacji do salonu" camunda:delegateExpression="${sendMessageDelegate}">
+      <bpmn:extensionElements>
+        <camunda:field name="messageName">
+          <camunda:string>ResponseFactoryMessage</camunda:string>
+        </camunda:field>
+        <camunda:field name="startProcess">
+          <camunda:string>false</camunda:string>
+        </camunda:field>
+        <camunda:field name="newOrderStatus">
+          <camunda:string>null</camunda:string>
+        </camunda:field>
+        <camunda:field name="correlateProcessInstanceVar">
+          <camunda:string>dealershipProcessId</camunda:string>
+        </camunda:field>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="carAvailableInProduction">${carAvailableInFactory == 'true' || baseConstructionAvailable == 'true' || 
+productionPossible == 'true'}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ib027s</bpmn:incoming>
+      <bpmn:incoming>Flow_01uw2at</bpmn:incoming>
+      <bpmn:incoming>Flow_171ojmi</bpmn:incoming>
+      <bpmn:incoming>Flow_13959jw</bpmn:incoming>
+    </bpmn:sendTask>
+    <bpmn:userTask id="Fabryka_TransportSamochoduDoSalonu" name="Transport samochodu do salonu" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${inTransport}" event="complete" id="InTransport" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1xseiw0</bpmn:incoming>
+      <bpmn:outgoing>Flow_10htd3c</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_0kxyq8d" name="Dostarczenie samochodu">
+      <bpmn:incoming>Flow_10htd3c</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_180klyl" messageRef="TransportFromFactory" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>TransportFromFactoryMessage</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>InTransport</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>dealershipProcessId</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:message id="AskFactory" name="AskFactoryMessage" />
+  <bpmn:message id="AskDealership" name="AskDealershipMessage" />
+  <bpmn:message id="ResponseFactory" name="ResponseFactoryMessage" />
+  <bpmn:message id="TransportFromFactory" name="TransportFromFactoryMessage" />
+  <bpmn:message id="WaitingForCollection" name="WaitingForCollectionMessage" />
+  <bpmn:message id="OrderReject" name="OrderRejectMessage" />
+  <bpmn:message id="Message_0xp12su" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_16ikafs">
+      <bpmndi:BPMNShape id="Participant_019rtvj_di" bpmnElement="Participant_019rtvj" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="2200" height="620" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0m10n9h_di" bpmnElement="Flow_0m10n9h">
+        <di:waypoint x="2200" y="448" />
+        <di:waypoint x="2272" y="448" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tgcdq7_di" bpmnElement="Flow_0tgcdq7">
+        <di:waypoint x="1650" y="700" />
+        <di:waypoint x="1732" y="700" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0smc25g_di" bpmnElement="Flow_0smc25g">
+        <di:waypoint x="1950" y="920" />
+        <di:waypoint x="1975" y="920" />
+        <di:waypoint x="1975" y="740" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14912vv_di" bpmnElement="Flow_14912vv">
+        <di:waypoint x="1175" y="810" />
+        <di:waypoint x="1362" y="810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e2zavl_di" bpmnElement="Flow_0e2zavl">
+        <di:waypoint x="1150" y="835" />
+        <di:waypoint x="1150" y="880" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01lz2qy_di" bpmnElement="Flow_01lz2qy">
+        <di:waypoint x="1150" y="740" />
+        <di:waypoint x="1150" y="785" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xzmmgl_di" bpmnElement="Flow_0xzmmgl">
+        <di:waypoint x="1975" y="540" />
+        <di:waypoint x="1975" y="488" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jsrejh_di" bpmnElement="Flow_1jsrejh">
+        <di:waypoint x="1600" y="835" />
+        <di:waypoint x="1600" y="920" />
+        <di:waypoint x="1680" y="920" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1621" y="893" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y9ufqj_di" bpmnElement="Flow_0y9ufqj">
+        <di:waypoint x="1600" y="785" />
+        <di:waypoint x="1600" y="740" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1611" y="763" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nlezkx_di" bpmnElement="Flow_0nlezkx">
+        <di:waypoint x="2025" y="448" />
+        <di:waypoint x="2100" y="448" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xqlx9v_di" bpmnElement="Flow_0xqlx9v">
+        <di:waypoint x="1175" y="448" />
+        <di:waypoint x="1925" y="448" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1354" y="430" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bbohxe_di" bpmnElement="Flow_1bbohxe">
+        <di:waypoint x="1060" y="448" />
+        <di:waypoint x="1125" y="448" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hxzd24_di" bpmnElement="Flow_0hxzd24">
+        <di:waypoint x="908" y="448" />
+        <di:waypoint x="960" y="448" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mndl2w_di" bpmnElement="Flow_1mndl2w">
+        <di:waypoint x="1150" y="473" />
+        <di:waypoint x="1150" y="555" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1207" y="492" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_193hndg_di" bpmnElement="Flow_193hndg">
+        <di:waypoint x="1175" y="580" />
+        <di:waypoint x="1250" y="580" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1203" y="562" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ihxqnq_di" bpmnElement="Flow_1ihxqnq">
+        <di:waypoint x="1540" y="580" />
+        <di:waypoint x="1650" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01bws94_di" bpmnElement="Flow_01bws94">
+        <di:waypoint x="1750" y="580" />
+        <di:waypoint x="1925" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0p0u6lg_di" bpmnElement="Flow_0p0u6lg">
+        <di:waypoint x="1350" y="580" />
+        <di:waypoint x="1440" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1or79a1_di" bpmnElement="Flow_1or79a1">
+        <di:waypoint x="1150" y="605" />
+        <di:waypoint x="1150" y="660" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1115" y="626" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04a333u_di" bpmnElement="Flow_04a333u">
+        <di:waypoint x="1398" y="810" />
+        <di:waypoint x="1575" y="810" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lwswei_di" bpmnElement="Flow_1lwswei">
+        <di:waypoint x="1780" y="920" />
+        <di:waypoint x="1850" y="920" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13ppjxs_di" bpmnElement="Flow_13ppjxs">
+        <di:waypoint x="1975" y="660" />
+        <di:waypoint x="1975" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0w7peua_di" bpmnElement="Salon_RezerwacjaSamoochodu">
+        <dc:Bounds x="1250" y="540" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0osccbx_di" bpmnElement="Gateway_0osccbx" isMarkerVisible="true">
+        <dc:Bounds x="1125" y="555" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1026" y="560" width="89" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_04b9a63_di" bpmnElement="Salon_ZlozenieZamowienia">
+        <dc:Bounds x="1100" y="660" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0hlgtnc_di" bpmnElement="Salon_CzySamochodDostepnyWSalonie" isMarkerVisible="true">
+        <dc:Bounds x="1125" y="423" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1114" y="382" width="74" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_006vqit_di" bpmnElement="Salon_Przyjecie">
+        <dc:Bounds x="960" y="408" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1nsek75_di" bpmnElement="Salon_Start">
+        <dc:Bounds x="872" y="430" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="862" y="473" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1eoly0v_di" bpmnElement="Activity_1eoly0v">
+        <dc:Bounds x="1100" y="880" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_158gk5v_di" bpmnElement="Gateway_0d05rrb">
+        <dc:Bounds x="1125" y="785" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_040mdww_di" bpmnElement="Gateway_040mdww" isMarkerVisible="true">
+        <dc:Bounds x="1575" y="785" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1635" y="790" width="74" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0o5upc2_di" bpmnElement="Salon_PrzygotowanieDoTransportu">
+        <dc:Bounds x="1440" y="540" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1b01djz_di" bpmnElement="Event_1b01djz">
+        <dc:Bounds x="1362" y="792" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1348" y="742" width="63" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1dsdudm_di" bpmnElement="Salon_TransportSamochodu">
+        <dc:Bounds x="1650" y="540" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0x82qv8_di" bpmnElement="Salon_OdebranieSamochodu_Message">
+        <dc:Bounds x="1850" y="880" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0arrauf_di" bpmnElement="Event_0nkyylz">
+        <dc:Bounds x="1732" y="682" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1720" y="645" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16mworn_di" bpmnElement="Salon_OdrzucenieZamwoienia">
+        <dc:Bounds x="1550" y="660" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1nq8c1r_di" bpmnElement="Salon_OczekiwanieNaSamochod">
+        <dc:Bounds x="1680" y="880" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0m7of8p_di" bpmnElement="Salon_KontrolaJakosci">
+        <dc:Bounds x="1925" y="540" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1uawrim_di" bpmnElement="Salon_WyslanieInfoDoKlienta">
+        <dc:Bounds x="2272" y="430" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2259" y="473" width="63" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0868cn1_di" bpmnElement="Salon_PrzygotowanieSamochodu">
+        <dc:Bounds x="1925" y="408" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1e2b8uf_di" bpmnElement="Salon_GotoweDoOdbioru">
+        <dc:Bounds x="2100" y="408" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1sjzlva_di" bpmnElement="Salon_OdebranieSamochodu">
+        <dc:Bounds x="1925" y="660" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_1p8kbk3_di" bpmnElement="Participant_1p8kbk3" isHorizontal="true">
+        <dc:Bounds x="160" y="1090" width="2200" height="659" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0fdgvbw_di" bpmnElement="Flow_0fdgvbw">
+        <di:waypoint x="1280" y="1624" />
+        <di:waypoint x="1280" y="1709" />
+        <di:waypoint x="1335" y="1709" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1287" y="1664" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y0oss7_di" bpmnElement="Flow_0y0oss7">
+        <di:waypoint x="1600" y="1599" />
+        <di:waypoint x="1700" y="1599" />
+        <di:waypoint x="1700" y="1520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15xhp5h_di" bpmnElement="Flow_15xhp5h">
+        <di:waypoint x="1445" y="1599" />
+        <di:waypoint x="1500" y="1599" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ib027s_di" bpmnElement="Flow_0ib027s">
+        <di:waypoint x="1420" y="1574" />
+        <di:waypoint x="1420" y="1190" />
+        <di:waypoint x="1560" y="1190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wc9b6p_di" bpmnElement="Flow_0wc9b6p">
+        <di:waypoint x="1280" y="1505" />
+        <di:waypoint x="1280" y="1574" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1287" y="1538" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ikpwh0_di" bpmnElement="Flow_0ikpwh0">
+        <di:waypoint x="1305" y="1599" />
+        <di:waypoint x="1395" y="1599" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1331" y="1581" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11w470t_di" bpmnElement="Flow_11w470t">
+        <di:waypoint x="1750" y="1480" />
+        <di:waypoint x="1840" y="1480" />
+        <di:waypoint x="1840" y="1389" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09xeyth_di" bpmnElement="Flow_09xeyth">
+        <di:waypoint x="1495" y="1480" />
+        <di:waypoint x="1650" y="1480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01uw2at_di" bpmnElement="Flow_01uw2at">
+        <di:waypoint x="1470" y="1455" />
+        <di:waypoint x="1470" y="1190" />
+        <di:waypoint x="1560" y="1190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_00ya6db_di" bpmnElement="Flow_00ya6db">
+        <di:waypoint x="1305" y="1480" />
+        <di:waypoint x="1445" y="1480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1331" y="1462" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1izxqma_di" bpmnElement="Flow_1izxqma">
+        <di:waypoint x="1280" y="1374" />
+        <di:waypoint x="1280" y="1455" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1287" y="1411" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wuoupn_di" bpmnElement="Flow_1wuoupn">
+        <di:waypoint x="1545" y="1349" />
+        <di:waypoint x="1790" y="1349" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_171ojmi_di" bpmnElement="Flow_171ojmi">
+        <di:waypoint x="1520" y="1324" />
+        <di:waypoint x="1520" y="1190" />
+        <di:waypoint x="1560" y="1190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09aslhz_di" bpmnElement="Flow_09aslhz">
+        <di:waypoint x="1305" y="1349" />
+        <di:waypoint x="1495" y="1349" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1390" y="1331" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01l4adq_di" bpmnElement="Flow_01l4adq">
+        <di:waypoint x="1280" y="1230" />
+        <di:waypoint x="1280" y="1324" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xseiw0_di" bpmnElement="Flow_1xseiw0">
+        <di:waypoint x="1890" y="1349" />
+        <di:waypoint x="1980" y="1349" />
+        <di:waypoint x="1980" y="1230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tzotny_di" bpmnElement="Flow_0tzotny">
+        <di:waypoint x="1168" y="1190" />
+        <di:waypoint x="1230" y="1190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13959jw_di" bpmnElement="Flow_13959jw">
+        <di:waypoint x="1360" y="1684" />
+        <di:waypoint x="1360" y="1190" />
+        <di:waypoint x="1560" y="1190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03olu67_di" bpmnElement="Flow_03olu67">
+        <di:waypoint x="1385" y="1709" />
+        <di:waypoint x="1602" y="1709" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10htd3c_di" bpmnElement="Flow_10htd3c">
+        <di:waypoint x="2030" y="1190" />
+        <di:waypoint x="2132" y="1190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Gateway_14q9ixm_di" bpmnElement="Gateway_0tr6d1v">
+        <dc:Bounds x="1445" y="1455" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_12b2859_di" bpmnElement="Gateway_12b2859" isMarkerVisible="true">
+        <dc:Bounds x="1255" y="1455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1166" y="1470" width="68" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1uf6sdl_di" bpmnElement="Fabryka_Start">
+        <dc:Bounds x="1132" y="1172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1121" y="1215" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0sgthmr_di" bpmnElement="Gateway_0sgthmr" isMarkerVisible="true">
+        <dc:Bounds x="1255" y="1324" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1171" y="1329" width="74" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0co6ne6_di" bpmnElement="Gateway_0co6ne6" isMarkerVisible="true">
+        <dc:Bounds x="1255" y="1574" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1176" y="1579" width="63" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0as7k99_di" bpmnElement="Gateway_0x9pqw4">
+        <dc:Bounds x="1495" y="1324" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_16i18mn_di" bpmnElement="Gateway_1edptr2">
+        <dc:Bounds x="1395" y="1574" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0go4b29_di" bpmnElement="Gateway_1ixyxnd">
+        <dc:Bounds x="1335" y="1684" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0626op3_di" bpmnElement="Fabryka_PrzyjecieZamowienia">
+        <dc:Bounds x="1230" y="1150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16iagbt_di" bpmnElement="Fabryka_ProdukcjaBazowa">
+        <dc:Bounds x="1500" y="1559" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1k86u2x_di" bpmnElement="Fabryka_ProdukcjaWyposazenia">
+        <dc:Bounds x="1650" y="1440" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0y8uv7x_di" bpmnElement="Event_0y8uv7x">
+        <dc:Bounds x="1602" y="1691" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1650" y="1689" width="79" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0kupd2o_di" bpmnElement="Fabryka_KontrolaJakosci">
+        <dc:Bounds x="1790" y="1309" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16d41f9_di" bpmnElement="Fabryka_WyslanieInformacjiDoSalonu">
+        <dc:Bounds x="1560" y="1150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17i9bsd_di" bpmnElement="Fabryka_TransportSamochoduDoSalonu">
+        <dc:Bounds x="1930" y="1150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0kxyq8d_di" bpmnElement="Event_0kxyq8d">
+        <dc:Bounds x="2132" y="1172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2117" y="1217.5" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_1stwjmk_di" bpmnElement="Participant_1stwjmk" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2200" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_062qcqg_di" bpmnElement="Flow_062qcqg">
+        <di:waypoint x="1640" y="142" />
+        <di:waypoint x="1640" y="100" />
+        <di:waypoint x="2030" y="100" />
+        <di:waypoint x="2030" y="132" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1deqyxk_di" bpmnElement="Flow_1deqyxk">
+        <di:waypoint x="1450" y="200" />
+        <di:waypoint x="1540" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1z0cv6z_di" bpmnElement="Flow_1z0cv6z">
+        <di:waypoint x="1870" y="200" />
+        <di:waypoint x="2030" y="200" />
+        <di:waypoint x="2030" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06mjwsu_di" bpmnElement="Flow_06mjwsu">
+        <di:waypoint x="1280" y="200" />
+        <di:waypoint x="1350" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10g07bx_di" bpmnElement="Flow_10g07bx">
+        <di:waypoint x="1140" y="200" />
+        <di:waypoint x="1180" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1acdvot_di" bpmnElement="Flow_1acdvot">
+        <di:waypoint x="268" y="200" />
+        <di:waypoint x="300" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0p54urb_di" bpmnElement="Flow_0p54urb">
+        <di:waypoint x="1640" y="200" />
+        <di:waypoint x="1770" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_16v54jy_di" bpmnElement="Klient_OdebranieSamochodu">
+        <dc:Bounds x="1770" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13ynu74_di" bpmnElement="Event_13ynu74">
+        <dc:Bounds x="232" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="218" y="225" width="64" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0jsni87_di" bpmnElement="Klient_ZlozenieZamowienia">
+        <dc:Bounds x="1180" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0aqo134_di" bpmnElement="Klient_WyslanieZamowienia">
+        <dc:Bounds x="1350" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1aym1iv_di" bpmnElement="Klient_OczekiwanieNaZamowienie">
+        <dc:Bounds x="1540" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01kmaaq_di" bpmnElement="Klient_Zakonczenie">
+        <dc:Bounds x="2012" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2059.5" y="136.5" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15t0t8f_di" bpmnElement="Klient_Konfiguracja" isExpanded="true">
+        <dc:Bounds x="300" y="100" width="840" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0t4s1fg_di" bpmnElement="Flow_0t4s1fg">
+        <di:waypoint x="1050" y="200" />
+        <di:waypoint x="1082" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v6tyn2_di" bpmnElement="Flow_1v6tyn2">
+        <di:waypoint x="368" y="200" />
+        <di:waypoint x="400" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dkx2f6_di" bpmnElement="Flow_0dkx2f6">
+        <di:waypoint x="920" y="200" />
+        <di:waypoint x="950" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ji1hqm_di" bpmnElement="Flow_0ji1hqm">
+        <di:waypoint x="780" y="200" />
+        <di:waypoint x="820" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wyqfm4_di" bpmnElement="Flow_0wyqfm4">
+        <di:waypoint x="640" y="200" />
+        <di:waypoint x="680" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0z0inah_di" bpmnElement="Flow_0z0inah">
+        <di:waypoint x="500" y="200" />
+        <di:waypoint x="540" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1yyhf9t_di" bpmnElement="Event_1yyhf9t">
+        <dc:Bounds x="332" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ejmm5y_di" bpmnElement="Event_1ejmm5y">
+        <dc:Bounds x="1082" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_081hz3s_di" bpmnElement="Klient_Konfiguracja_Model">
+        <dc:Bounds x="400" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10t3bo3_di" bpmnElement="Klient_Konfiguracja_Silnik">
+        <dc:Bounds x="540" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1smry5p_di" bpmnElement="Klient_Konfiguracja_TypNadwozia">
+        <dc:Bounds x="680" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0eqe1vv_di" bpmnElement="Klient_Konfiguracja_SkrzyniaBiegow">
+        <dc:Bounds x="820" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1uupih8_di" bpmnElement="Klient_Konfiguracja_WyposazenieDodatkowe">
+        <dc:Bounds x="950" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_16mb0xs_di" bpmnElement="Klient_OdebranieOdrzucenia">
+        <dc:Bounds x="1622" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1661" y="110" width="58" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0mex7uu_di" bpmnElement="Flow_0mex7uu">
+        <di:waypoint x="1400" y="240" />
+        <di:waypoint x="1400" y="350" />
+        <di:waypoint x="890" y="350" />
+        <di:waypoint x="890" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uuc7ou_di" bpmnElement="Flow_1uuc7ou">
+        <di:waypoint x="1150" y="960" />
+        <di:waypoint x="1150" y="1172" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hupi12_di" bpmnElement="Flow_0hupi12">
+        <di:waypoint x="2150" y="1172" />
+        <di:waypoint x="2150" y="1050" />
+        <di:waypoint x="1910" y="1050" />
+        <di:waypoint x="1910" y="960" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qy2p1l_di" bpmnElement="Flow_1qy2p1l">
+        <di:waypoint x="2290" y="430" />
+        <di:waypoint x="2290" y="350" />
+        <di:waypoint x="1590" y="350" />
+        <di:waypoint x="1590" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18xshp5_di" bpmnElement="Flow_18xshp5">
+        <di:waypoint x="1610" y="1150" />
+        <di:waypoint x="1610" y="1050" />
+        <di:waypoint x="1380" y="1050" />
+        <di:waypoint x="1380" y="828" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
