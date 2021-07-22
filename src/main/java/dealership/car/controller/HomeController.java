@@ -30,4 +30,10 @@ public class HomeController extends AbstractController {
         return "login";
     }
 
+    @GetMapping("/setup")
+    public String setup() {
+        userSecurityService.setup();
+        return "redirect:/home";
+    }
+
 }

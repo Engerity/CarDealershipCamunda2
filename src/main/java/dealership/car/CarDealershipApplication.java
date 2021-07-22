@@ -3,10 +3,10 @@ package dealership.car;
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+/*import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;*/
 
 @SpringBootApplication
 @EnableProcessApplication
@@ -16,7 +16,7 @@ public class CarDealershipApplication {
 		SpringApplication.run(CarDealershipApplication.class, args);
 	}
 
-	public DriverManagerDataSource dataSource() {
+	/*public DriverManagerDataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
 		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
@@ -30,5 +30,5 @@ public class CarDealershipApplication {
 	@Bean
 	public PlatformTransactionManager transactionManager() {
 		return new DataSourceTransactionManager(dataSource());
-	}
+	}*/
 }
