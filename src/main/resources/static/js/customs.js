@@ -79,6 +79,9 @@ function handleChangeChild(currentNum, newNum) {
             ? "/client/change/" + processId + "?stepNum=" + newNum
             : "/client/complete/" + taskId;
 
+        $('#ajaxError').hide();
+        $('#form').hide();
+        $('#spinner').show();
 
         $.ajax({
             type: "POST",
@@ -89,6 +92,8 @@ function handleChangeChild(currentNum, newNum) {
             cache: false,
             timeout: 600000,
             success: function (d) {
+                $('#form').show();
+                $('#spinner').hide();
                 //console.log("SUCCESS", d);
                 $('#orderId').val(d.orderId);
                 $('#processId').val(d.processId);
@@ -105,6 +110,12 @@ function handleChangeChild(currentNum, newNum) {
 
             },
             error: function (e) {
+                $('#ajaxError').show();
+                $('#submitOrder').attr('disabled', true);
+
+                $('#form').show();
+                $('#spinner').hide();
+
                 console.log("ERROR", e);
             }
         });

@@ -13,20 +13,15 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    List<Order> findAllByOwner(User owner);
+    @Query("SELECT o FROM Order o ORDER BY o.creationDate DESC")
+    List<Order> findAll();
 
-    List<Order> findAllByOwner_Name(String name);
+    List<Order> findAllByOwnerOrderByCreationDateDesc(User owner);
 
-    List<Order> findAllByOrderStatusEnumIn(List<OrderStatusEnum> enums);
+    List<Order> findAllByOwner_NameOrderByCreationDateDesc(String name);
 
-    List<Order> findAllByOrderStatusEnumInAndOwner_Name(List<OrderStatusEnum> enums, String name);
+    List<Order> findAllByOrderStatusEnumInOrderByCreationDateDesc(List<OrderStatusEnum> enums);
 
-    @Modifying
-    @Query("delete from Order o where o.id = ?1")
-    void delete(Long id);
-
-    @Modifying
-    @Query("delete from Order o where o = ?1")
-    void delete(Order order);
+    List<Order> findAllByOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(List<OrderStatusEnum> enums, String name);
 
 }

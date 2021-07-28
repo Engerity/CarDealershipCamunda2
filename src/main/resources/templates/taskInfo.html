@@ -14,6 +14,9 @@
         <!--/*@thymesVar id="order" type="dealership.car.model.Order"*/-->
         <div th:if="${order != null}" class="row">
             <div class="col-2">
+                <h5>Nr zamówienia</h5>
+                <p th:text="${order.number}"></p>
+
                 <h5>Klient</h5>
                 <p th:text="${order.owner.name}"></p>
 
@@ -44,7 +47,7 @@
         <table class="table table-bordered table-hover table-sm">
             <thead class="text-center">
             <tr>
-                <th scope="col">#</th>
+                <th scope="col">Lp.</th>
                 <th scope="col">Nazwa</th>
                 <th scope="col">Wartość</th>
                 <th scope="col">Typ</th>

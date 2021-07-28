@@ -51,10 +51,10 @@
                 <a class="nav-link" th:href="@{/client/}">Konfigurator zamówień</a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Złożone zamówienia'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
-                <a class="nav-link" th:href="@{/client/orders/}">Złożone zamówienia</a>
+                <a class="nav-link" th:href="@{/client/orders?active=1}">Złożone zamówienia</a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Zamówienia'} ? active" sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_FACTORY_WORKER')">
-                <a class="nav-link" th:href="@{/orders/}">Zamówienia</a>
+                <a class="nav-link" th:href="@{/orders?active=1}">Zamówienia</a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Tasks'} ? active">
                 <a class="nav-link" th:href="@{/tasks/}">Zadania</a>

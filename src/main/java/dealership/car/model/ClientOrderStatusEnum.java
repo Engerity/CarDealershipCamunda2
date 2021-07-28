@@ -1,5 +1,8 @@
 package dealership.car.model;
 
+/**
+ * Typ wyliczeniowy statusu zamówienia widoczny dla klienta
+ */
 public enum ClientOrderStatusEnum {
 
     Registration("Rejestracja"),
@@ -20,12 +23,23 @@ public enum ClientOrderStatusEnum {
 
     ;
 
+    /**
+     * Słowny opis statusu
+     */
     private final String description;
 
+    /**
+     * Konstruktor z opisem statusu
+     * @param description opis statusu
+     */
     ClientOrderStatusEnum(String description) {
         this.description = description;
     }
 
+    /**
+     * Zwraca opis statusu ClientOrderStatusEnum
+     * @return opis statusu ClientOrderStatusEnum
+     */
     public String getDescription() {
         return description;
     }

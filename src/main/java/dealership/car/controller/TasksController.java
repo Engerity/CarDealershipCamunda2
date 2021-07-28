@@ -41,11 +41,26 @@ public class TasksController extends AbstractController {
         roles.forEach(r -> groups.add(r.getAuthority()));
         Map<RoleEnum, List<Task>> taskInGroups = new LinkedHashMap<>();
         roles.forEach(r -> taskInGroups.put((RoleEnum) r, camundaProcessService.getTasksForCandidateGroupIn(Collections.singletonList(r.getAuthority()))));
-        List<Task> candidateGroupIn = camundaProcessService.getTasksForCandidateGroupIn(groups);
+
+        taskInGroups.values().forEach(list -> list.removeIf(assignedTasks::contains));
+
+        Map<String, Order> tasksOrders = new HashMap<>();
+        Set<Task> allTasks = new HashSet<>(assignedTasks);
+        taskInGroups.forEach((key, value) -> allTasks.addAll(value));
+
+        for (Task t : allTasks) {
+            if (!tasksOrders.containsKey(t.getId())) {
+                String orderId = (String) camundaProcessService.getVariable(t.getProcessInstanceId(), "orderId");
+                if (StringUtils.isNotBlank(orderId)) {
+                    Order order = orderRepository.findById(Long.valueOf(orderId)).orElse(null);
+                    tasksOrders.put(t.getId(), order);
+                }
+            }
+        }
 
         model.addAttribute("assignedTasks", assignedTasks);
-        model.addAttribute("candidateGroupIn", candidateGroupIn);
         model.addAttribute("taskInGroups", taskInGroups);
+        model.addAttribute("tasksOrders", tasksOrders);
         return "tasks";
     }
 
@@ -63,7 +78,7 @@ public class TasksController extends AbstractController {
 
         Order order = null;
         if (StringUtils.isNotBlank(orderId))
-            order = orderRepository.getOne(Long.valueOf(orderId));
+            order = orderRepository.findById(Long.valueOf(orderId)).orElse(null);
 
         VariableMap variableFormMap = camundaProcessService.getTaskFormVariables(taskId);
         CompleteTasksModel completeTaskModel = new CompleteTasksModel();
@@ -96,7 +111,7 @@ public class TasksController extends AbstractController {
 
         Order order = null;
         if (StringUtils.isNotBlank(orderId))
-            order = orderRepository.getOne(Long.valueOf(orderId));
+            order = orderRepository.findById(Long.valueOf(orderId)).orElse(null);
 
         VariableMap variableFormMap = camundaProcessService.getTaskFormVariables(taskId);
         List<CustomFormField> variablesInfo = new ArrayList<>();
@@ -130,7 +145,7 @@ public class TasksController extends AbstractController {
 
     @GetMapping("/assigne/{taskId}")
     public ModelAndView setTaskAssigne(@PathVariable("taskId") String taskId, @AuthenticationPrincipal UserDetailsSecurity userDetails, Model model) {
-        camundaProcessService.setTaskAssignee(taskId, userDetails.getUsername());
+        camundaProcessService.setTaskAssignee(taskId, userDetails);
         return new ModelAndView("redirect:/tasks");
     }
 
@@ -159,7 +174,7 @@ public class TasksController extends AbstractController {
         else
             camundaProcessService.completeTask(completeTaskModel.getId(), variables);
 
-        redirect.addFlashAttribute("globalMessage", "Successfully completed task id " + completeTaskModel.getId() + ".");
+        redirect.addFlashAttribute("globalMessage", "Pomyślnie ukończone zadanie  id " + completeTaskModel.getId() + ".");
         return new ModelAndView("redirect:/tasks");
     }
 

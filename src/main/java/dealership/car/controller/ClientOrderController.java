@@ -15,13 +15,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 
+/**
+ * Kontroler dostępny w ramach operacji Klienta
+ */
 @Controller
 @RequestMapping("/client")
 public class ClientOrderController extends AbstractController {
@@ -33,10 +36,17 @@ public class ClientOrderController extends AbstractController {
     @Autowired
     private OrderRepository orderRepository;
 
+    /**
+     * Obsługuje wyświetlenie listy dla Konfiguracji zamówień
+     *
+     * @param userDetails informacje o zalogowanym użytkowniku
+     * @param model       model danych przesyłany do widoku
+     * @return nazwa szablonu widoku
+     */
     @GetMapping
-    public String showExistingOrders(@AuthenticationPrincipal UserDetailsSecurity userDetails, Model model) {
+    public String showNotSendOrders(@AuthenticationPrincipal UserDetailsSecurity userDetails, Model model) {
         List<Task> taskList = camundaProcessService.getTasksForAssignee(userDetails.getUsername());
-        Map<Task, OrderModel> taskOrderModelMap =new LinkedHashMap<>();
+        Map<Task, OrderModel> taskOrderModelMap = new LinkedHashMap<>();
         for (Task task : taskList) {
             if (task.getProcessDefinitionId().contains(ProcessKey.CAR_DEALERSHIP_KLIENT.name())) {
                 Object object = camundaProcessService.getVariable(task.getProcessInstanceId(), "orderData");
@@ -51,6 +61,14 @@ public class ClientOrderController extends AbstractController {
         return "client_orders";
     }
 
+    /**
+     * Obsługuje kreator nowego zamówienia
+     *
+     * @param orderModel  obiekt DTO informacji o zamówieniu
+     * @param userDetails informacje o zalogowanym użytkowniku
+     * @param model       model danych przesyłany do widoku
+     * @return nazwa szablonu widoku
+     */
     @GetMapping("/new")
     public String newOrderConfigurationForm(@ModelAttribute OrderModel orderModel, @AuthenticationPrincipal UserDetailsSecurity userDetails, Model model) {
         Map<String, Object> variables = new HashMap<>();
@@ -70,6 +88,14 @@ public class ClientOrderController extends AbstractController {
         return "client_orderConfig";
     }
 
+    /**
+     * Obsługuje kreator edycji zamówienia (gdy jeszcze nie wysłane do salonu)
+     *
+     * @param processId  id procesu w camunda
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @param model      model danych przesyłany do widoku
+     * @return nazwa szablonu widoku
+     */
     @GetMapping("edit/{process_id}")
     public String showOrderConfigurationForm(@PathVariable("process_id") String processId,
                                              @AuthenticationPrincipal UserDetailsSecurity userDetail,
@@ -88,9 +114,17 @@ public class ClientOrderController extends AbstractController {
         return "client_orderConfig";
     }
 
+    /**
+     * Obsługuje usunięcie zamówienia (gdy jeszcze nie wysłane do salonu)
+     *
+     * @param processId  id procesu w camunda
+     * @param redirect   obiekt informacji przekierowania
+     * @param userDetail informacje o zalogowanym użytkownikuu
+     * @return przekierowanie na stronę główną
+     */
     @GetMapping("delete/{process_id}")
-    public ModelAndView deleteProcess(@PathVariable("process_id") String processId, RedirectAttributes redirect,
-                                      @AuthenticationPrincipal UserDetailsSecurity userDetail) {
+    public String deleteProcess(@PathVariable("process_id") String processId, RedirectAttributes redirect,
+                                @AuthenticationPrincipal UserDetailsSecurity userDetail) {
 
         if (userDetail.getAuthorities().contains(RoleEnum.ROLE_ADMIN) ||
                 camundaProcessService.getTasksForAssignee(userDetail.getUsername())
@@ -105,34 +139,79 @@ public class ClientOrderController extends AbstractController {
             if (StringUtils.isBlank(orderId))
                 orderId = (String) camundaProcessService.getVariable(processId, "orderId");
 
-            camundaProcessService.deleteProcess(processId, "Usunięte przez " + userDetail.getUsername());
-            if (StringUtils.isNotBlank(orderId))
-                orderRepository.delete(Long.valueOf(orderId));
+            String reason = "Usunięte przez " + userDetail.getUsername();
 
-            redirect.addFlashAttribute("globalMessage", "Successfully deleted process id " + processId + ".");
+            try {
+                deleteProcessByVariableName(processId, "clientProcessId", reason);
+                deleteProcessByVariableName(processId, "dealershipProcessId", reason);
+
+
+                camundaProcessService.deleteProcess(processId, reason);
+            } catch (Exception e) {
+                redirect.addFlashAttribute("globalMessage", "Nie udało się usunąć procesu (" + processId + ").");
+                return "redirect:/home";
+            }
+
+            if (StringUtils.isNotBlank(orderId))
+                orderRepository.deleteById(Long.valueOf(orderId));
+
+            redirect.addFlashAttribute("globalMessage", "Z powodzeniem usunięto proces (" + processId + ").");
         } else {
-            redirect.addFlashAttribute("globalMessage", "Failed to delete process id " + processId + ".");
+            redirect.addFlashAttribute("globalMessage", "Nie udało się usunąć procesu (" + processId + ").");
         }
 
-        return new ModelAndView("redirect:/home");
+        return "redirect:/home";
     }
 
+    /**
+     * Usuwanie procesu na podstawie zapisanych zmiennych Camunaa
+     * @param processId id procesu Camunda
+     * @param varName nazwa zmiennej Camunda
+     * @param reason powód usunięcia procesu
+     */
+    private void deleteProcessByVariableName(String processId, String varName, String reason) {
+        Object var = camundaProcessService.getVariable(processId, varName);
+        if (var instanceof String
+                && StringUtils.isNotBlank((String) var)) {
+
+            camundaProcessService.deleteProcess((String) var, reason);
+        }
+
+    }
+
+    /**
+     * Obsługa złożenia zamówienia
+     *
+     * @param orderModel obiekt DTO informacji o zamówieniu
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @param redirect   obiekt informacji przekierowania
+     * @return przekierowanie na listę zamówień
+     */
     @PostMapping
-    public ModelAndView confirmOrderRegistration(@Valid OrderModel orderModel,
-                                                 @AuthenticationPrincipal UserDetailsSecurity userDetail,
-                                                 RedirectAttributes redirect) {
+    public String confirmOrderRegistration(@Valid OrderModel orderModel,
+                                           @AuthenticationPrincipal UserDetailsSecurity userDetail,
+                                           RedirectAttributes redirect) {
         Map<String, Object> variables = new HashMap<>();
 
         Order order = new Order();
         order.setOrderInfo(new OrderInfo(orderModel));
         order.setOrderStatusEnum(OrderStatusEnum.Registration);
         order.setOwner(userDetail.getUser());
-        order.setCreationDate(LocalDateTime.now());
+
+        order.setCreationDate(Instant.now().atZone(ZoneId.of("Europe/Warsaw")).toLocalDateTime());
+
         order.getOrderInfo().setProcessId(orderModel.getProcessId());
 
         order = orderRepository.save(order);
+
+        order.setNumber(order.getId()
+                + order.getOwner().getName().substring(0, 2)
+                + order.getCreationDateAsString().substring(0, 10).replace("-", ""));
+        orderRepository.save(order);
+
         orderRepository.flush();
         orderModel.setOrderId(String.valueOf(order.getId()));
+        orderModel.setNumber(order.getNumber());
 
         variables.put("orderData", orderModel);
         variables.put("orderId", orderModel.getOrderId());
@@ -143,10 +222,19 @@ public class ClientOrderController extends AbstractController {
         camundaProcessService.setVariable(orderModel.getProcessId(), "client", orderModel.getClient());
         camundaProcessService.completeTask(orderModel.getTaskId(), variables);
 
-        redirect.addFlashAttribute("globalMessage", "Successfully completed task id " + orderModel.getTaskId() + ".");
-        return new ModelAndView("redirect:/client");
+        redirect.addFlashAttribute("globalMessage", "Pomyślnie ukończone zadanie  id " + orderModel.getTaskId() + ".");
+        return "redirect:/client/orders";
     }
 
+    /**
+     * Obsługa kroku wstecz i zmian sekcji konfiguratora zamówień
+     *
+     * @param processId  id procesu w camunda
+     * @param stepNum    numer kroku konfiguratora
+     * @param orderModel obiekt DTO informacji o zamówieniu
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @return odpowiedź HTTP (200 lub 500)
+     */
     @PostMapping("/change/{process_id}")
     public ResponseEntity<?> moveConfigLog(@PathVariable("process_id") String processId, @RequestParam("stepNum") long stepNum,
                                            @RequestBody OrderModel orderModel, @AuthenticationPrincipal UserDetailsSecurity userDetail) {
@@ -164,9 +252,17 @@ public class ClientOrderController extends AbstractController {
         return new ResponseEntity<>(orderModel, HttpStatus.OK);
     }
 
+    /**
+     * Obsługa przycusku Dalej lub zatwierdzenia zadania
+     *
+     * @param taskId     id zadania Camunda
+     * @param orderModel obiekt DTO informacji o zamówieniu
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @return odpowiedź HTTP (200 lub 500)
+     */
     @PostMapping("/complete/{taskId}")
     public ResponseEntity<?> completeStep(@PathVariable("taskId") String taskId, @RequestBody OrderModel orderModel,
-                                      @AuthenticationPrincipal UserDetailsSecurity userDetail) {
+                                          @AuthenticationPrincipal UserDetailsSecurity userDetail) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("orderData", orderModel);
         camundaProcessService.completeTask(taskId, variables);
@@ -175,40 +271,44 @@ public class ClientOrderController extends AbstractController {
             orderModel.setTaskId(taskList.get(0).getId());
             camundaProcessService.setVariable(orderModel.getProcessId(), "orderData", orderModel);
         }
-        return new ResponseEntity<>(orderModel,HttpStatus.OK);
+        return new ResponseEntity<>(orderModel, HttpStatus.OK);
     }
 
+    /**
+     * Obsługuje wyświetlanie listy zamówień dla klienta
+     *
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @param active     czy tylko aktywne zamówienia (opcjonalnie)
+     * @param model      model danych przesyłany do widoku
+     * @return nazwa szablonu widoku
+     */
     @GetMapping("/orders")
     public String viewOrdersList(@AuthenticationPrincipal UserDetailsSecurity userDetail,
-                                 @RequestParam(required = false) List<String> orderStatus,
+                                 @RequestParam(required = false) Integer active,
                                  Model model) {
 
-        List<OrderStatusEnum> orderStatusEnum = null;
-        if (orderStatus != null && !orderStatus.isEmpty()) {
-            orderStatusEnum = new ArrayList<>();
-
-            for (String val : orderStatus) {
-                OrderStatusEnum tmp = OrderStatusEnum.valueOfString(val);
-                if (tmp != null)
-                    orderStatusEnum.add(tmp);
-            }
-        }
-
         List<Order> orders;
-        if (orderStatusEnum != null) {
-            orders = orderRepository.findAllByOrderStatusEnumInAndOwner_Name(orderStatusEnum, userDetail.getUsername());
+        if (active != null && active == 1) {
+            orders = orderRepository.findAllByOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(OrderStatusEnum.activeStatuses(), userDetail.getUsername());
+        } else if (active != null && active == 0) {
+            orders = orderRepository.findAllByOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(OrderStatusEnum.notActiveStatuses(), userDetail.getUsername());
         } else {
-            orders = orderRepository.findAllByOwner_Name(userDetail.getUsername());
+            orders = orderRepository.findAllByOwner_NameOrderByCreationDateDesc(userDetail.getUsername());
         }
 
         model.addAttribute("urlPath", "/client/orders");
-        model.addAttribute("urlActiveStatuses", "/client/orders?orderStatus=" + OrderStatusEnum.activeStatusesAsString());
-        model.addAttribute("urlNotActiveStatuses", "/client/orders?orderStatus=" + OrderStatusEnum.notActiveStatusesAsString());
+        model.addAttribute("urlActiveStatuses", "/client/orders?active=1");
+        model.addAttribute("urlNotActiveStatuses", "/client/orders?active=0");
         model.addAttribute("orders", orders);
         model.addAttribute("viewLabel", "Złożone zamówienia");
         return "ordersList";
     }
 
+    /**
+     * Pomocnicza metoda uzupełnia w modelu zasoby danych konfiguratora zamówień (lista modeli, silników, typów nadwozia itd.)
+     *
+     * @param model model danych
+     */
     private void fillModelWithAvailableResources(Model model) {
         model.addAttribute("carModels", availableResourcesService.getAvailableModels());
         model.addAttribute("carEngines", availableResourcesService.getAvailableEngines());
@@ -217,6 +317,12 @@ public class ClientOrderController extends AbstractController {
         model.addAttribute("carAdditionalEquipments", availableResourcesService.getAvailableAdditionalEquipments());
     }
 
+    /**
+     * Pomocniczna metoda zwracajaca nazwę zadania w BPMN na podstaiwe nr kroku w Kreatorze konfiguracji zamówienia
+     *
+     * @param stepNum nr kroku
+     * @return nazwa zadania BPMN
+     */
     private String getKlientKonfiguracjaStepName(long stepNum) {
         String stepName = null;
 

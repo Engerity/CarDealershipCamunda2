@@ -11,8 +11,25 @@
 
         <h2 class="mb-5">Konfiguracja nowego zamówienia</h2>
 
+        <!-- Spinner -->
+        <div class="row justify-content-center" id="spinner">
+            <div class="col text-center py-5">
+                <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ajax Error -->
+        <div class="row" id="ajaxError">
+            <div class="col">
+                <p class="alert alert-danger top-buffer-md">Błąd komunikacji z serwerem!</p>
+            </div>
+        </div>
+
+
         <!--/*@thymesVar id="orderModel" type="dealership.car.model.OrderModel"*/-->
-        <form class="form" th:action="@{/client}" th:object="${orderModel}" method="post">
+        <form class="form" th:action="@{/client}" th:object="${orderModel}" method="post" id="form">
 
             <input type="text" id="orderId" name="orderId" class="form-control" th:value="*{orderId}" />
             <input type="text" id="processId" name="processId" class="form-control" th:value="*{processId}" />
@@ -198,6 +215,9 @@
 
 <div th:replace="layout/fragments :: bootstrap_js"></div>
 <script th:inline="javascript">
+
+    $('#ajaxError').hide();
+    $('#spinner').hide();
 
     $('#processId').hide();
     $('#orderId').hide();

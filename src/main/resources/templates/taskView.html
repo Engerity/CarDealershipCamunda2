@@ -15,6 +15,9 @@
         <!--/*@thymesVar id="order" type="dealership.car.model.Order"*/-->
         <div th:if="${order != null}" class="row">
             <div class="col-2">
+                <h5>Nr zamówienia</h5>
+                <p th:text="${order.number}"></p>
+
                 <h5>Klient</h5>
                 <p th:text="${order.owner.name}"></p>
 

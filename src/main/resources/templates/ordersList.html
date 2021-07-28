@@ -13,9 +13,15 @@
 
         <div class="row justify-content-end">
             <div class="col">
-                <a th:href="${urlActiveStatuses}" role="button" class="btn btn-outline-primary btn-sm">Aktywne</a>
-                <a th:href="${urlNotActiveStatuses}" role="button" class="btn btn-outline-secondary btn-sm">Nieaktywne</a>
-                <a th:href="${urlPath}" role="button" class="btn btn-outline-dark btn-sm">Wszystkie</a>
+                <a th:href="${urlActiveStatuses}" role="button"
+                   class="btn btn-sm"
+                   th:classappend="${#httpServletRequest.getParameter('active') == '1' ? 'btn-secondary' : 'btn-outline-secondary'}">Aktywne</a>
+                <a th:href="${urlNotActiveStatuses}" role="button"
+                   class="btn btn-sm"
+                   th:classappend="${#httpServletRequest.getParameter('active') == '0' ? 'btn-secondary' : 'btn-outline-secondary'}">Nieaktywne</a>
+                <a th:href="${urlPath}" role="button"
+                   class="btn btn-sm"
+                   th:classappend="${#httpServletRequest.getParameter('active') == null ? 'btn-secondary' : 'btn-outline-secondary'}">Wszystkie</a>
             </div>
         </div>
         <div class="row">
@@ -23,7 +29,7 @@
                 <table id="summaryTable" class="table text-center">
                     <thead>
                     <tr>
-                        <th scope="col">#</th>
+                        <th scope="col">Nr zamówienia</th>
                         <th scope="col">Klient</th>
                         <th scope="col">Data zamówienia</th>
                         <th scope="col">Status</th>
@@ -35,7 +41,7 @@
                     <tbody>
                     <!--/*@thymesVar id="orders" type="java.util.List<dealership.car.model.Order>"*/-->
                     <tr th:each="order: ${orders}">
-                        <th scope="row" th:text="${order.id}"></th>
+                        <th scope="row" th:text="${order.number}"></th>
                         <td th:text="${order.owner.name}"></td>
                         <td th:text="${order.creationDateAsString}"></td>
                         <td th:text="${order.clientOrderStatusEnum.description}"></td>

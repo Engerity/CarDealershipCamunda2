@@ -3,6 +3,7 @@ package dealership.car.camunda.service;
 import dealership.car.config.ProcessKey;
 import dealership.car.model.IUser;
 import dealership.car.model.RoleEnum;
+import dealership.car.model.UserDetailsSecurity;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.form.TaskFormData;
@@ -119,7 +120,6 @@ public class CamundaProcessService {
      *
      * @param processId ID instancji procesu
      * @param reason    powód usunięcia
-     * @return ID instancji procesu
      */
     public void deleteProcess(String processId, String reason) {
         runtimeService.deleteProcessInstance(processId, reason);
@@ -237,13 +237,22 @@ public class CamundaProcessService {
      * Zmienia użytkownika przypisanego do zadania
      *
      * @param taskId ID zadania
-     * @param userId ID użytkownika
+     * @param userDetails dane zalogowanego użytkownika
      */
-    public void setTaskAssignee(String taskId, String userId) {
-        taskService.setAssignee(taskId, userId);
+    public void setTaskAssignee(String taskId, UserDetailsSecurity userDetails) {
+        taskService.setAssignee(taskId, userDetails.getUsername());
         Task task = getTaskForId(taskId);
-        if (task != null)
-            setVariable(task.getProcessInstanceId(), "assignee", userId);
+        if (task != null) {
+            setVariable(task.getProcessInstanceId(), "assignee", userDetails.getUsername());
+
+            if (task.getProcessDefinitionId().contains("CAR_DEALERSHIP_FACTORY")) {
+                setVariable("factoryWorker", "assignee", userDetails.getUsername());
+            } else if (task.getProcessDefinitionId().contains("CAR_DEALERSHIP_SALON")) {
+                setVariable("dealership", "assignee", userDetails.getUsername());
+            } else if (task.getProcessDefinitionId().contains("CAR_DEALERSHIP_KLIENT")) {
+                setVariable("client", "assignee", userDetails.getUsername());
+            }
+        }
     }
 
     /**
@@ -284,9 +293,7 @@ public class CamundaProcessService {
      */
     public void setVariable(String processId, String key, Object value) {
         List<Execution> processInstances = runtimeService.createExecutionQuery().processInstanceId(processId).list();
-        processInstances.forEach(execution -> {
-            runtimeService.setVariable(execution.getId(), key, value);
-        });
+        processInstances.forEach(execution -> runtimeService.setVariable(execution.getId(), key, value));
     }
 
     /**

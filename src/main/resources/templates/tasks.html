@@ -17,8 +17,9 @@
             <table class="table table-bordered table-hover table-sm">
                 <thead class="text-center">
                     <tr>
-                        <th scope="col">TaskID</th>
-                        <th scope="col">ProcessInstanceID</th>
+                        <!--<th scope="col">TaskID</th>
+                        <th scope="col">ProcessInstanceID</th>-->
+                        <th scope="col">Nr zamówienia</th>
                         <th scope="col">Nazwa</th>
                         <th scope="col">Użytkownik</th>
                         <th scope="col">Operacje</th>
@@ -26,8 +27,11 @@
                 </thead>
                 <tbody>
                     <tr th:each="assignedTask : ${assignedTasks}">
-                        <td scope="row" name="my_taskId" th:text="${assignedTask.id}"></td>
-                        <td th:text="${assignedTask.processInstanceId}"></td>
+                        <td scope="row" name="my_taskId" th:text="${assignedTask.id}" style="display: none"></td>
+                        <td th:text="${assignedTask.processInstanceId}" style="display: none">></td>
+
+                        <td th:text="${tasksOrders.get(assignedTask.id) != null ? tasksOrders.get(assignedTask.id).number : 'Not found'}"></td>
+
                         <td th:text="${assignedTask.name}"></td>
                         <td th:text="${assignedTask.assignee}"></td>
                         <td class="text-center">
@@ -61,8 +65,9 @@
                 <table class="table table-bordered table-hover table-sm">
                     <thead class="text-center">
                         <tr>
-                            <th scope="col">TaskID</th>
-                            <th scope="col">ProcessInstanceID</th>
+                            <!--<th scope="col">TaskID</th>
+                            <th scope="col">ProcessInstanceID</th>-->
+                            <th scope="col">Nr zamówienia</th>
                             <th scope="col">Nazwa</th>
                             <th scope="col">Użytkownik</th>
                             <th scope="col">Operacje</th>
@@ -70,8 +75,11 @@
                     </thead>
                     <tbody>
                         <tr th:each="candidateTask : ${entry.value}">
-                            <td scope="row" name="group_taskId" th:text="${candidateTask.id}"></td>
-                            <td th:text="${candidateTask.processInstanceId}"></td>
+                            <td scope="row" name="group_taskId" th:text="${candidateTask.id}" style="display: none"></td>
+                            <td th:text="${candidateTask.processInstanceId}" style="display: none"></td>
+
+                            <td th:text="${tasksOrders.get(candidateTask.id) != null ? tasksOrders.get(candidateTask.id).number : 'Not found'}"></td>
+
                             <td th:text="${candidateTask.name}"></td>
                             <td th:text="${candidateTask.assignee}"></td>
                             <td class="text-center">

@@ -19,5 +19,6 @@ public class SendMessageToFactoryListener implements ExecutionListener {
     @Override
     public void notify(DelegateExecution delegateExecution) throws Exception {
         camundaProcessService.setVariable(delegateExecution.getProcessInstanceId(), "dealershipProcessId", delegateExecution.getProcessInstanceId());
+        camundaProcessService.setVariable(delegateExecution.getProcessInstanceId(), "dealeship", delegateExecution.getVariable("assignee"));
     }
 }

@@ -15,36 +15,38 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Kontroler dostępny w ramach operacji Salonu i Fabryki
+ */
 @Controller
 @RequestMapping("/orders")
 public class DealershipOrderController extends AbstractController {
     private static final Logger log = LoggerFactory.getLogger(DealershipOrderController.class);
 
+    /**
+     * Lista zamówień w systemie
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @param active czy tylko aktywne zamówienia (opcjonalnie)
+     * @param model model danych przesyłany do widoku
+     * @return nazwa szablonu widoku
+     */
     @GetMapping()
     public String viewOrdersList(@AuthenticationPrincipal UserDetailsSecurity userDetail,
-                                 @RequestParam(required = false) List<String> orderStatus, Model model) {
-
-        List<OrderStatusEnum> orderStatusEnum = null;
-        if (orderStatus != null && !orderStatus.isEmpty()) {
-            orderStatusEnum = new ArrayList<>();
-
-            for (String val : orderStatus) {
-                OrderStatusEnum tmp = OrderStatusEnum.valueOfString(val);
-                if (tmp != null)
-                    orderStatusEnum.add(tmp);
-            }
-        }
+                                 @RequestParam(required = false) Integer active,
+                                 Model model) {
 
         List<Order> orders;
-        if (orderStatusEnum != null) {
-            orders = orderRepository.findAllByOrderStatusEnumIn(orderStatusEnum);
+        if (active != null && active == 1) {
+            orders = orderRepository.findAllByOrderStatusEnumInOrderByCreationDateDesc(OrderStatusEnum.activeStatuses());
+        } else if (active != null && active == 0) {
+            orders = orderRepository.findAllByOrderStatusEnumInOrderByCreationDateDesc(OrderStatusEnum.notActiveStatuses());
         } else {
            orders = orderRepository.findAll();
         }
 
         model.addAttribute("urlPath", "/orders");
-        model.addAttribute("urlActiveStatuses", "/orders?orderStatus=" + OrderStatusEnum.activeStatusesAsString());
-        model.addAttribute("urlNotActiveStatuses", "/orders?orderStatus=" + OrderStatusEnum.notActiveStatusesAsString());
+        model.addAttribute("urlActiveStatuses", "/orders?active=1");
+        model.addAttribute("urlNotActiveStatuses", "/orders?active=0");
         model.addAttribute("orders", orders);
         model.addAttribute("viewLabel", "Zamówienia");
         return "ordersList";

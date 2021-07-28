@@ -15,10 +15,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Kontroler dostępny w ramach operacji obsługi zadań
+ */
 @Controller
 @RequestMapping("/process")
 public class ProcessController extends AbstractController {
 
+    /**
+     * Wyświetlenie szczegółowych informacji na temat procesu/zadania
+     * @param processId id procesu Camunda
+     * @param userDetails informacje o zalogowanym użytkowniku
+     * @param model model danych przesyłany do widoku
+     * @return nazwa szablonu widoku
+     */
     @GetMapping("/info/{processId}")
     public String infoForTask(@PathVariable("processId") String processId, @AuthenticationPrincipal UserDetailsSecurity userDetails, Model model) {
         Map<String, Object> vars =  camundaProcessService.getVariables(processId);
@@ -43,7 +53,7 @@ public class ProcessController extends AbstractController {
         String orderId = (String) vars.get("orderId");
         Order order = null;
         if (StringUtils.isNotBlank(orderId))
-            order = orderRepository.getOne(Long.valueOf(orderId));
+            order = orderRepository.findById(Long.valueOf(orderId)).orElse(null);
 
         model.addAttribute("order", order);
         model.addAttribute("variablesInfo", variablesInfo);

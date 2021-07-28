@@ -21,10 +21,10 @@
                 <table id="summaryTable" class="table text-center">
                     <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Process ID</th>
-                        <th scope="col">Task ID</th>
-                        <th scope="col">Etap</th>
+                        <th scope="col">Lp.</th>
+                        <!--<th scope="col">Process ID</th>
+                        <th scope="col">Task ID</th>-->
+                        <th scope="col">Etap konfiguracji</th>
                         <th scope="col">Operacje</th>
                     </tr>
                     </thead>
@@ -32,8 +32,8 @@
                     <!--/*@thymesVar id="carModels" type="java.util.Map<org.camunda.bpm.engine.task.Task, dealership.car.model.OrderModel>"*/-->
                     <tr th:if="${!taskOrderModelMap.isEmpty()}" th:each="entry,iter: ${taskOrderModelMap}">
                         <th scope="row" th:text="${iter.index + 1}"></th>
-                        <td th:text="${entry.getKey().processInstanceId}"></td>
-                        <td th:text="${entry.getKey().id}"></td>
+                        <!--<td th:text="${entry.getKey().processInstanceId}"></td>
+                        <td th:text="${entry.getKey().id}"></td>-->
                         <td th:text="${entry.getKey().name}"></td>
                         <td>
                             <a class="btn btn-outline-success btn-sm"

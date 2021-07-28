@@ -16,6 +16,7 @@ public class OrderModel implements Serializable {
     private static final long serialVersionUID = 6549881889832859363L;
 
     protected String orderId;
+    protected String number;
     protected String processId;
     protected String taskId;
     @NotEmpty(message = "Wybór modelu jest wymagany")
@@ -44,6 +45,7 @@ public class OrderModel implements Serializable {
 
     public OrderModel(OrderModel copy) {
         this.orderId = copy.orderId;
+        this.number = copy.number;
         this.model = copy.model;
         this.engine = copy.engine;
         this.bodyType = copy.bodyType;
@@ -59,6 +61,15 @@ public class OrderModel implements Serializable {
 
     public void setOrderId(String orderId) {
         this.orderId = orderId;
+    }
+
+    @Transient
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
     }
 
     public String getProcessId() {
