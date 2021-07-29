@@ -36,19 +36,19 @@
                         <td th:text="${assignedTask.assignee}"></td>
                         <td class="text-center">
                             <form th:id="${'my_'+'complete_'+assignedTask.id}" th:action="@{/tasks}"
-                                  th:object="${completeTaskModel}" method="post">
+                                  th:object="${completeTaskModel}" method="post" style="display: none">
                                 <input type="hidden" id="id" name="id" th:value="${assignedTask.id}"/>
                                 <button class="btn btn-outline-primary btn-sm" type="submit">Zatwierdź <i class="far fa-check-square"></i></button>
                             </form>
                             <a th:id="${'my_'+'open_'+assignedTask.id}" class="btn btn-outline-success btn-sm"
-                               th:href="${'/tasks/open/'+assignedTask.id}" role="button">Otwórz <i class="far fa-edit"></i></a>
+                               th:href="${'/tasks/open/'+assignedTask.id}" role="button" style="display: none">Otwórz <i class="far fa-edit"></i></a>
 
                             <a th:id="${'my_'+'info_'+assignedTask.id}" class="btn btn-outline-info btn-sm"
                                th:href="${'/tasks/info/'+assignedTask.id}" role="button">Info <i class="fas fa-info-circle"></i></a>
 
                             <a class="btn btn-outline-danger btn-sm"
                                th:id="${'my_'+'remove_'+assignedTask.id}"
-                               th:href="${'/client/delete/' + assignedTask.processInstanceId}" role="button">Usuń
+                               th:href="${'/client/delete/' + assignedTask.processInstanceId}" role="button" style="display: none">Usuń
                                 <i class="far fa-trash-alt"></i></a>
                         </td>
                     </tr>
@@ -85,18 +85,18 @@
                             <td class="text-center">
                                 <th:block th:if="${candidateTask.assignee.equals(#authentication.principal.username)}">
                                     <form th:id="${'group_'+'complete_'+candidateTask.id}" th:action="@{/tasks}"
-                                          th:object="${completeTaskModel}" method="post">
+                                          th:object="${completeTaskModel}" method="post" style="display: none">
                                         <input type="hidden" id="id" name="id" th:value="${candidateTask.id}"/>
                                         <button class="btn btn-outline-primary btn-sm" type="submit">Zatwierdź <i class="far fa-check-square"></i></button>
                                     </form>
                                     <a th:id="${'group_'+'open_'+candidateTask.id}" class="btn btn-outline-success btn-sm"
-                                       th:href="${'/tasks/open/'+candidateTask.id}" role="button">Otwórz <i class="far fa-edit"></i></a>
+                                       th:href="${'/tasks/open/'+candidateTask.id}" role="button" style="display: none">Otwórz <i class="far fa-edit"></i></a>
 
                                     <a th:id="${'group_'+'info_'+candidateTask.id}" class="btn btn-outline-info btn-sm"
                                        th:href="${'/tasks/info/'+candidateTask.id}" role="button">Info <i class="fas fa-info-circle"></i></a>
 
                                     <a th:id="${'group_'+'remove_'+candidateTask.id}" class="btn btn-outline-danger btn-sm"
-                                       th:href="${'/client/delete/' + candidateTask.processInstanceId}" role="button">Usuń
+                                       th:href="${'/client/delete/' + candidateTask.processInstanceId}" role="button" style="display: none">Usuń
                                         <i class="far fa-trash-alt"></i></a>
                                 </th:block>
                                 <th:block th:if="${!candidateTask.assignee.equals(#authentication.principal.username)}">

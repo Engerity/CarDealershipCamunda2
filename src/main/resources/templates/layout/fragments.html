@@ -48,7 +48,7 @@
                 <a class="nav-link" th:href="@{/home}">Home</a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Konfigurator zamówieńa'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
-                <a class="nav-link" th:href="@{/client/}">Konfigurator zamówień</a>
+                <a class="nav-link" th:href="@{/client/}">Konfigurator zamówień <sup id="badgeOrderConfigTasks" class="badge badge-pill badge-warning" style="display: none">0</sup></a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Złożone zamówienia'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
                 <a class="nav-link" th:href="@{/client/orders?active=1}">Złożone zamówienia</a>
@@ -57,7 +57,7 @@
                 <a class="nav-link" th:href="@{/orders?active=1}">Zamówienia</a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Tasks'} ? active">
-                <a class="nav-link" th:href="@{/tasks/}">Zadania</a>
+                <a class="nav-link" th:href="@{/tasks/}">Zadania <sup id="badgeMyTasks" class="badge badge-pill badge-success" style="display: none">0</sup> <sup id="badgeOtherTasks" class="badge badge-pill badge-primary" style="display: none">0</sup></a>
             </li>
             <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
                 <a class="nav-link" th:href="@{/camunda/app/}" target="_blank"><span class="dropup"><span class="caret"></span></span>
@@ -96,6 +96,39 @@
     <script th:src="@{/webjars/jquery/3.5.1/jquery.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/4.6.0/js/bootstrap.bundle.js}"></script>
     <script th:src="@{/js/customs.js}"></script>
+
+    <script>
+
+            $.ajax({
+                type: "GET",
+                contentType: "text/plain",
+                url: "/tasks/count",
+                cache: false,
+                timeout: 600000,
+                success: function (d) {
+                    if (d[0] === 0) $('#badgeMyTasks').hide();      else    $('#badgeMyTasks').show();
+                    if (d[1] === 0) $('#badgeOtherTasks').hide();   else    $('#badgeOtherTasks').show();
+
+
+                    $('#badgeMyTasks').text(d[0]);
+                    $('#badgeOtherTasks').text(d[1]);
+
+                    if ($('#badgeOrderConfigTasks')) {
+                        if (d[2] === 0) $('#badgeOrderConfigTasks').hide(); else $('#badgeOrderConfigTasks').show();
+
+                        $('#badgeOrderConfigTasks').text(d[2]);
+                    }
+                },
+                error: function (e) {
+                    $('#badgeMyTasks').hide();
+                    $('#badgeOtherTasks').hide();
+
+                    if ($('#badgeOrderConfigTasks'))
+                        $('#badgeOrderConfigTasks').hide();
+                    console.log("ERROR", e);
+                }
+            });
+    </script>
 </div>
 </body>
 
