@@ -99,12 +99,20 @@ public class ClientOrderController extends AbstractController {
     @GetMapping("edit/{process_id}")
     public String showOrderConfigurationForm(@PathVariable("process_id") String processId,
                                              @AuthenticationPrincipal UserDetailsSecurity userDetail,
+                                             RedirectAttributes redirect,
                                              Model model) {
         OrderModel orderModel = new OrderModel();
         String name = getKlientKonfiguracjaStepName(1);
         Object value = camundaProcessService.getVariable(processId, "orderData");
         if (value instanceof OrderModel)
             orderModel = (OrderModel) value;
+
+        if (orderModel.getClient() != null
+                && !userDetail.getUsername().equals(orderModel.getClient())) {
+            redirect.addFlashAttribute("globalError", "Nie można uruchomić procesu (" + processId + ").");
+            return "redirect:/home";
+        }
+
         String newTaskID = camundaProcessService.restartProcessInstance(processId, userDetail.getUsername(), name);
         orderModel.setProcessId(processId);
         orderModel.setTaskId(newTaskID);
@@ -148,7 +156,7 @@ public class ClientOrderController extends AbstractController {
 
                 camundaProcessService.deleteProcess(processId, reason);
             } catch (Exception e) {
-                redirect.addFlashAttribute("globalMessage", "Nie udało się usunąć procesu (" + processId + ").");
+                redirect.addFlashAttribute("globalError", "Nie można usunąć procesu (" + processId + ").");
                 return "redirect:/home";
             }
 
@@ -157,7 +165,7 @@ public class ClientOrderController extends AbstractController {
 
             redirect.addFlashAttribute("globalMessage", "Z powodzeniem usunięto proces (" + processId + ").");
         } else {
-            redirect.addFlashAttribute("globalMessage", "Nie udało się usunąć procesu (" + processId + ").");
+            redirect.addFlashAttribute("globalError", "Nie można usunąć procesu (" + processId + ").");
         }
 
         return "redirect:/home";

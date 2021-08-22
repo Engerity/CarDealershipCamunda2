@@ -7,7 +7,7 @@
 
 <div class="container">
     <div class="content">
-        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+        <div th:replace="layout/fragments :: global_message(classappend='top-buffer-md')"></div>
 
         <h2 class="mb-5">Konfiguracja nowego zamówienia</h2>
 
@@ -147,15 +147,19 @@
                     </div>
                     <div class="tab-pane" id="additionalEquipment-form" role="tabpanel">
                         <div class="row">
-                            <div id="additionalEquipmentCheckboxes" class="col">
+                            <div class="col">
                                 <div class="row">
                                     <div class="col">
                                         <label>Wybierz dodatkowe wyposażenie</label>
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <input id="allEquipments" type="checkbox" />
+                                        <label id="forAllEquipments">Zaznacz wszystko</label>
+                                    </div>
                                     <!--/*@thymesVar id="carTransmissionTypes" type="java.util.Map<String, String>"*/-->
-                                    <div class="col-6" th:each="entry : ${carAdditionalEquipments}">
+                                    <div id="equipmentsDiv" class="col-6" th:each="entry : ${carAdditionalEquipments}">
                                         <input type="checkbox" th:field="*{additionalEquipments}" th:value="${entry.key}"/>
                                         <label th:text="${entry.value}"></label>
                                     </div>
@@ -229,6 +233,28 @@
         let elemNum = findElementNum(elem)
         if (elemNum !== undefined)
             handleChangeChild(currentChildNum(), elemNum);
+    });
+
+    function init() {
+        var allSelected = true;
+        var ch = $("#equipmentsDiv input[type='checkbox']");
+        for (var i=0; i < ch.length; i++) {
+            if (!ch[i].checked) {
+                allSelected = false;
+                break;
+            }
+        }
+        $("#allEquipments").prop('checked', allSelected);
+    }
+    init();
+
+    $("#allEquipments").change(function() {
+        $("#equipmentsDiv input[type='checkbox']").prop('checked', this.checked);
+        if (this.checked) {
+            $("#forAllEquipments").text("Odznacz wszystkie");
+        } else {
+            $("#forAllEquipments").text("Zaznacz wszystkie");
+        }
     });
 
 </script>

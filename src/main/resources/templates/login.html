@@ -9,10 +9,10 @@
 
 <div class="container">
     <div class="content">
-        <div th:replace="layout/fragments :: global_message(classappend='alert-success top-buffer-md')"></div>
+        <div th:replace="layout/fragments :: global_message(classappend='top-buffer-md')"></div>
 
         <p th:if="${param.logout}" class="alert alert-success top-buffer-md">Wylogowano pomyślnie.</p>
-        <p th:if="${param.error}" class="alert alert-danger top-buffer-md">Błąd autoryzacji. Sprawdź swoje dane uwierzytelniające. .</p>
+        <p th:if="${param.error}" class="alert alert-danger top-buffer-md">Błąd autoryzacji. Sprawdź swoje dane uwierzytelniające.</p>
 
         <div class="row justify-content-center">
             <div class="col-md-8">

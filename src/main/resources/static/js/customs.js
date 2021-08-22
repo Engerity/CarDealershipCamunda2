@@ -59,7 +59,7 @@ function handleChangeChild(currentNum, newNum) {
         var bodyType =  $('#bodyTypeSelect option:selected').val();
         var transmissionType =  $('#transmissionTypeSelect option:selected').val();
         var additionalEquipments = []
-        $('#additionalEquipmentCheckboxes input:checked').each(function() {
+        $('#equipmentsDiv input:checked').each(function() {
             additionalEquipments.push($(this).attr('value'));
         });
 
@@ -104,7 +104,7 @@ function handleChangeChild(currentNum, newNum) {
                 $("#bodyTypeSelect").val(d.bodyType).change();
                 $("#transmissionTypeSelect").val(d.transmissionType).change();
 
-                $('#additionalEquipmentCheckboxes input').each(function() {
+                $('#equipmentsDiv input').each(function() {
                     $(this).attr('checked', d.additionalEquipments.includes($(this).attr('value')));
                 });
 

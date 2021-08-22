@@ -85,7 +85,12 @@
 <div th:fragment="global_message">
     <div th:if="${globalMessage}" class="row">
         <div class="col">
-            <p th:text="${globalMessage}" class="alert" th:classappend="${classappend}"/>
+            <p th:text="${globalMessage}" class="alert alert-success" th:classappend="${classappend}"/>
+        </div>
+    </div>
+    <div th:if="${globalError}" class="row">
+        <div class="col">
+            <p th:text="${globalError}" class="alert alert-danger" th:classappend="${classappend}"/>
         </div>
     </div>
 </div>

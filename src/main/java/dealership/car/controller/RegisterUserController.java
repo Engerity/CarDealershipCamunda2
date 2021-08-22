@@ -60,13 +60,13 @@ public class RegisterUserController extends AbstractController {
 						.append(objectError.getDefaultMessage())
 						.append(".");
 			}
-			redirect.addFlashAttribute("globalMessage", errorMsg.toString());
+			redirect.addFlashAttribute("globalError", errorMsg.toString());
 			return new ModelAndView("redirect:/register");
 		}
 
 		// Czy taki użytkownik już istnieje?
 		if (userSecurityService.userExists(registerUserModel.getUser())) {
-			redirect.addFlashAttribute("globalMessage", "Użytkownik " + registerUserModel.getUser() + " już istnieje.");
+			redirect.addFlashAttribute("globalError", "Użytkownik " + registerUserModel.getUser() + " już istnieje.");
 			return new ModelAndView("redirect:/register");
 		}
 
