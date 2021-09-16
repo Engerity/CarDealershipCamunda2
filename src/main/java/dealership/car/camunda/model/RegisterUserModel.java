@@ -1,7 +1,7 @@
 package dealership.car.camunda.model;
 
 import dealership.car.model.RoleEnum;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 import java.util.HashSet;
 import java.util.Set;

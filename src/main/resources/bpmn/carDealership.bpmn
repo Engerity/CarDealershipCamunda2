@@ -11,10 +11,10 @@
     <bpmn:messageFlow id="Flow_1qy2p1l" sourceRef="Salon_WyslanieInfoDoKlienta" targetRef="Klient_OczekiwanieNaZamowienie" />
   </bpmn:collaboration>
   <bpmn:process id="CAR_DEALERSHIP_KLIENT" name="Car Dealership (Klient)" isExecutable="true">
-    <bpmn:userTask id="Klient_OdebranieSamochodu" name="Odebranie samochodu" camunda:formKey="taskView" camunda:assignee="${orderData.client}">
+    <bpmn:userTask id="Klient_OdebranieSamochodu" name="Potwierdź: Odebranie samochodu" camunda:formKey="taskView" camunda:assignee="${orderData.client}">
       <bpmn:extensionElements>
         <camunda:formData>
-          <camunda:formField id="feedbackFromClient" label="Opinia nt. zamówienia" type="string">
+          <camunda:formField id="feedbackFromClient" label="Opinia o zamówieniu" type="string">
             <camunda:properties>
               <camunda:property id="fieldType" value="textArea" />
               <camunda:property id="numRows" value="3" />
@@ -116,7 +116,7 @@
     </bpmn:endEvent>
   </bpmn:process>
   <bpmn:process id="CAR_DEALERSHIP_SALON" name="Car Dealership (Salon)" isExecutable="true">
-    <bpmn:userTask id="Salon_RezerwacjaSamoochodu" name="Rezerwacja samochodu" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_RezerwacjaSamoochodu" name="Zarezerwuj samochód w innym salonie" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="annotation" label="Adnotacje" type="string">
@@ -136,7 +136,7 @@
       <bpmn:outgoing>Flow_193hndg</bpmn:outgoing>
       <bpmn:outgoing>Flow_1or79a1</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Salon_ZlozenieZamowienia" name="Złożenie zamówienia w fabryce" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_ZlozenieZamowienia" name="Wyślij zamówienie do fabryki" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="messageToFactory" label="Dodatkowe informacje dla fabryki" type="string">
@@ -155,7 +155,7 @@
       <bpmn:outgoing>Flow_0xqlx9v</bpmn:outgoing>
       <bpmn:outgoing>Flow_1mndl2w</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Salon_Przyjecie" name="Przyjęcie zamówienia" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_Przyjecie" name="Zatwierdź: Przyjęcie zamówienia" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="carAvailable" label="Czy samochód dostępny w salonie?" type="boolean" defaultValue="true" />
@@ -248,7 +248,7 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInOtherDealership}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_04a333u" sourceRef="Event_1b01djz" targetRef="Gateway_040mdww" />
-    <bpmn:userTask id="Salon_TransportSamochodu" name="Transport samochodu" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_TransportSamochodu" name="Zatwierdź: Transport samochodu" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:taskListener delegateExpression="${inTransport}" event="create" id="InTransport" />
         <camunda:formData>
@@ -286,7 +286,7 @@
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:endEvent>
-    <bpmn:userTask id="Salon_OdrzucenieZamwoienia" name="Odrzucenie zamówienia" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_OdrzucenieZamwoienia" name="Zatwierdź: Odrzucenie zamówienia" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:taskListener delegateExpression="${dealershipOrderReject}" event="complete" id="DealershipOrderReject" />
         <camunda:formData>
@@ -300,7 +300,7 @@
       <bpmn:incoming>Flow_1jsrejh</bpmn:incoming>
       <bpmn:outgoing>Flow_1lwswei</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:userTask id="Salon_KontrolaJakosci" name="Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_KontrolaJakosci" name="Wykonaj: Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="comments" label="Komentarz do kontroli" type="string" defaultValue="Brak uwag">
@@ -340,7 +340,7 @@
       <bpmn:incoming>Flow_0xzmmgl</bpmn:incoming>
       <bpmn:outgoing>Flow_0nlezkx</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:userTask id="Salon_GotoweDoOdbioru" name="Gotowe do odbioru" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_GotoweDoOdbioru" name="Zatwierdź: Gotowe do odbioru" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="informationForCustomer" label="Informacje dla zamawiajacego" type="string" defaultValue="Samochód gotowy do odbioru.">
@@ -355,7 +355,7 @@
       <bpmn:incoming>Flow_0nlezkx</bpmn:incoming>
       <bpmn:outgoing>Flow_0m10n9h</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Salon_OdebranieSamochodu" name="Potwierdzenie odebrania samochodu" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Salon_OdebranieSamochodu" name="Potwierdź odbiór samochodu z fabryki" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:incoming>Flow_0smc25g</bpmn:incoming>
       <bpmn:outgoing>Flow_13ppjxs</bpmn:outgoing>
     </bpmn:userTask>
@@ -412,7 +412,7 @@
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:endEvent>
-    <bpmn:userTask id="Fabryka_TransportSamochoduDoSalonu" name="Transport samochodu do salonu" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Fabryka_TransportSamochoduDoSalonu" name="Zatwierdź: Transport samochodu do salonu" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:taskListener delegateExpression="${inTransport}" event="complete" id="InTransport" />
       </bpmn:extensionElements>
@@ -443,7 +443,7 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:incoming>Flow_171ojmi</bpmn:incoming>
       <bpmn:incoming>Flow_13959jw</bpmn:incoming>
     </bpmn:sendTask>
-    <bpmn:userTask id="Fabryka_KontrolaJakosci" name="Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Fabryka_KontrolaJakosci" name="Wykonaj: Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="factoryComments" label="Komentarz do kontroli" type="string" defaultValue="Brak uwag">
@@ -474,7 +474,7 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:incoming>Flow_15xhp5h</bpmn:incoming>
       <bpmn:outgoing>Flow_0y0oss7</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:userTask id="Fabryka_PrzyjecieZamowienia" name="Przyjęcie zamówienia na samochód" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+    <bpmn:userTask id="Fabryka_PrzyjecieZamowienia" name="Zatwierdź: Przyjęcie zamówienia na samochód" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="factoryAnnotation" label="Adnotacje" type="string" />
@@ -954,19 +954,49 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="1287" y="1664" width="17" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Gateway_14q9ixm_di" bpmnElement="Gateway_0tr6d1v">
-        <dc:Bounds x="1445" y="1455" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_12b2859_di" bpmnElement="Gateway_12b2859" isMarkerVisible="true">
-        <dc:Bounds x="1255" y="1455" width="50" height="50" />
+      <bpmndi:BPMNShape id="Event_0kxyq8d_di" bpmnElement="Event_0kxyq8d">
+        <dc:Bounds x="2132" y="1172" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1166" y="1470" width="68" height="40" />
+          <dc:Bounds x="2117" y="1218" width="65" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1uf6sdl_di" bpmnElement="Fabryka_Start">
-        <dc:Bounds x="1132" y="1172" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_17i9bsd_di" bpmnElement="Fabryka_TransportSamochoduDoSalonu">
+        <dc:Bounds x="1930" y="1150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16d41f9_di" bpmnElement="Fabryka_WyslanieInformacjiDoSalonu">
+        <dc:Bounds x="1560" y="1150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0kupd2o_di" bpmnElement="Fabryka_KontrolaJakosci">
+        <dc:Bounds x="1790" y="1309" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0y8uv7x_di" bpmnElement="Event_0y8uv7x">
+        <dc:Bounds x="1602" y="1691" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1121" y="1215" width="59" height="27" />
+          <dc:Bounds x="1650" y="1689" width="79" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1k86u2x_di" bpmnElement="Fabryka_ProdukcjaWyposazenia">
+        <dc:Bounds x="1650" y="1440" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16iagbt_di" bpmnElement="Fabryka_ProdukcjaBazowa">
+        <dc:Bounds x="1500" y="1559" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0626op3_di" bpmnElement="Fabryka_PrzyjecieZamowienia">
+        <dc:Bounds x="1230" y="1150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0go4b29_di" bpmnElement="Gateway_1ixyxnd">
+        <dc:Bounds x="1335" y="1684" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_16i18mn_di" bpmnElement="Gateway_1edptr2">
+        <dc:Bounds x="1395" y="1574" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0as7k99_di" bpmnElement="Gateway_0x9pqw4">
+        <dc:Bounds x="1495" y="1324" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0co6ne6_di" bpmnElement="Gateway_0co6ne6" isMarkerVisible="true">
+        <dc:Bounds x="1255" y="1574" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1176" y="1579" width="63" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0sgthmr_di" bpmnElement="Gateway_0sgthmr" isMarkerVisible="true">
@@ -975,50 +1005,20 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="1171" y="1329" width="74" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0co6ne6_di" bpmnElement="Gateway_0co6ne6" isMarkerVisible="true">
-        <dc:Bounds x="1255" y="1574" width="50" height="50" />
+      <bpmndi:BPMNShape id="Event_1uf6sdl_di" bpmnElement="Fabryka_Start">
+        <dc:Bounds x="1132" y="1172" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1176" y="1579" width="63" height="40" />
+          <dc:Bounds x="1121" y="1215" width="59" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0as7k99_di" bpmnElement="Gateway_0x9pqw4">
-        <dc:Bounds x="1495" y="1324" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_16i18mn_di" bpmnElement="Gateway_1edptr2">
-        <dc:Bounds x="1395" y="1574" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0go4b29_di" bpmnElement="Gateway_1ixyxnd">
-        <dc:Bounds x="1335" y="1684" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0626op3_di" bpmnElement="Fabryka_PrzyjecieZamowienia">
-        <dc:Bounds x="1230" y="1150" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_16iagbt_di" bpmnElement="Fabryka_ProdukcjaBazowa">
-        <dc:Bounds x="1500" y="1559" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1k86u2x_di" bpmnElement="Fabryka_ProdukcjaWyposazenia">
-        <dc:Bounds x="1650" y="1440" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0y8uv7x_di" bpmnElement="Event_0y8uv7x">
-        <dc:Bounds x="1602" y="1691" width="36" height="36" />
+      <bpmndi:BPMNShape id="Gateway_12b2859_di" bpmnElement="Gateway_12b2859" isMarkerVisible="true">
+        <dc:Bounds x="1255" y="1455" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1650" y="1689" width="79" height="40" />
+          <dc:Bounds x="1166" y="1470" width="68" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0kupd2o_di" bpmnElement="Fabryka_KontrolaJakosci">
-        <dc:Bounds x="1790" y="1309" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_16d41f9_di" bpmnElement="Fabryka_WyslanieInformacjiDoSalonu">
-        <dc:Bounds x="1560" y="1150" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_17i9bsd_di" bpmnElement="Fabryka_TransportSamochoduDoSalonu">
-        <dc:Bounds x="1930" y="1150" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0kxyq8d_di" bpmnElement="Event_0kxyq8d">
-        <dc:Bounds x="2132" y="1172" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="2117" y="1218" width="65" height="27" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="Gateway_14q9ixm_di" bpmnElement="Gateway_0tr6d1v">
+        <dc:Bounds x="1445" y="1455" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1uuc7ou_di" bpmnElement="Flow_1uuc7ou">
         <di:waypoint x="1150" y="960" />

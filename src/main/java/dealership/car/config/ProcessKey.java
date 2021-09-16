@@ -6,6 +6,6 @@ public enum ProcessKey {
 
     USER_TASK,
 
-    CAR_DEALERSHIP_KLIENT;
+    CAR_DEALERSHIP_KLIENT
 
 }
