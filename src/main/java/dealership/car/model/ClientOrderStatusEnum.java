@@ -11,6 +11,8 @@ public enum ClientOrderStatusEnum {
 
     Accepted("Przyjęte przez salon"),
 
+    WaitingForAdvancePayment("Oczekiwanie na zapłątę zaliczki"),
+
     InProgress("W trakcie realizacji"),
 
     InProductionProgress("W trakcie produkcji"),

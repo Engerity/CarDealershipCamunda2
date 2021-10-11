@@ -57,8 +57,24 @@
                             </ul>
                         </td>
                         <td>
-                            <a th:if="${order.orderInfo.processId != null}" th:id="${'info_'+order.orderInfo.processId}" class="btn btn-outline-info btn-sm"
+
+                            <a th:if="${order.orderInfo.processId != null}" th:id="${'info_'+order.orderInfo.processId}" class="btn btn-outline-info btn-sm mb-2"
                                th:href="${'/process/info/'+order.orderInfo.processId}" role="button">Info <i class="fas fa-info-circle"></i></a>
+
+                            <th:block th:if="${order.clientOrderStatusEnum != T(dealership.car.model.ClientOrderStatusEnum).Rejected
+                                     && order.clientOrderStatusEnum != T(dealership.car.model.ClientOrderStatusEnum).Completed}">
+
+                                <a sec:authorize="hasAnyRole('ROLE_CLIENT')"
+                                   th:if="${#authentication.getPrincipal().getUsername() == order.owner.name}"
+                                   th:id="${'clientCancel_'+order.id}"
+                                   th:href="${'/client/cancel/'+order.id}"
+                                   class="btn btn-outline-warning btn-sm mb-2" role="button"> Anuluj <i class="fas fa-ban"></i></a>
+
+                                <a sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_FACTORY_WORKER')"
+                                   th:id="${'cancel_'+order.id}"
+                                   th:href="${'/orders/cancel/'+order.id}"
+                                   class="btn btn-outline-warning btn-sm mb-2" role="button"> Anuluj <i class="fas fa-ban"></i></a>
+                            </th:block>
                         </td>
                     </tr>
                     </tbody>

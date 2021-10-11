@@ -39,7 +39,7 @@ public class SendMessageJavaDelegate extends BaseJavaDelegate {
         if (newOrderStatus != null && StringUtils.isNotBlank(newOrderStatus.getExpressionText()))
             return OrderStatusEnum.valueOfString(newOrderStatus.getExpressionText());
 
-        return OrderStatusEnum.SentToDealership;
+        return null;
     }
 
     /**

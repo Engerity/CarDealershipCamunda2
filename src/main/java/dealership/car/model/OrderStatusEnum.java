@@ -15,6 +15,8 @@ public enum OrderStatusEnum {
 
     Accepted(ClientOrderStatusEnum.Accepted),
 
+    WaitingForAdvancePayment(ClientOrderStatusEnum.WaitingForAdvancePayment),
+
     InProgress(ClientOrderStatusEnum.InProgress),
 
     SentToFactory("Wysłane do fabryki"),
