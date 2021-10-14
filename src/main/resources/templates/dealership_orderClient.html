@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/fragments :: head(title='Nowe zamówienie')">
+</head>
+<body>
+<nav th:replace="layout/fragments :: navbar(active='Nowe zamówienie', loggedIn='true')"></nav>
+
+<div class="container">
+  <div class="content">
+    <div th:replace="layout/fragments :: global_message(classappend='top-buffer-md')"></div>
+
+    <h2 class="mb-5">Konfiguracja nowego zamówienia</h2>
+
+
+    <!--/*@thymesVar id="orderModel" type="dealership.car.model.OrderModel"*/-->
+    <form class="form" th:action="@{/orders/newOrderForClient}" method="post" id="form">
+      <div class="row">
+        <div class="col">
+          <label for="selectedClient">Wybierz klienta</label>
+          <!--/*@thymesVar id="selectedClient" type="java.lang.String"*/-->
+          <select id="selectedClient" name="selectedClient" class="form-control selectpicker" data-live-search="true" required="required">
+            <option value=""></option>
+            <!--/*@thymesVar id="clients" type="java.util.List<dealership.car.model.User>"*/-->
+            <option th:each="entry: ${clients}"
+                    th:value="${entry.name}" th:text="${entry.name}"></option>
+          </select>
+        </div>
+      </div>
+      <div class="row my-3 px-3">
+        <button id="submitOrder"
+                type="submit"
+                class="btn btn-success btn-lg btn-block">Rozpocznij zamówienie
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div th:replace="layout/fragments :: bootstrap_js"></div>
+</body>
+</html>

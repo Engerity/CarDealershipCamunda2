@@ -25,5 +25,6 @@ public class RunFactoryService extends BaseJavaDelegate {
         super.execute(delegateExecution);
         delegateExecution.setVariable("userGroup", RoleEnum.ROLE_FACTORY_WORKER.getValue());
         delegateExecution.setVariable("assignee", "system");
+        delegateExecution.setVariable("orderCancelled", false);
     }
 }

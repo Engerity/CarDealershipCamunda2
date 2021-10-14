@@ -62,7 +62,8 @@
                                th:href="${'/process/info/'+order.orderInfo.processId}" role="button">Info <i class="fas fa-info-circle"></i></a>
 
                             <th:block th:if="${order.clientOrderStatusEnum != T(dealership.car.model.ClientOrderStatusEnum).Rejected
-                                     && order.clientOrderStatusEnum != T(dealership.car.model.ClientOrderStatusEnum).Completed}">
+                                     && order.clientOrderStatusEnum != T(dealership.car.model.ClientOrderStatusEnum).Completed
+                                     && order.clientOrderStatusEnum != T(dealership.car.model.ClientOrderStatusEnum).Cancelled}">
 
                                 <a sec:authorize="hasAnyRole('ROLE_CLIENT')"
                                    th:if="${#authentication.getPrincipal().getUsername() == order.owner.name}"

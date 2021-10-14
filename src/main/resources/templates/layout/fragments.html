@@ -9,11 +9,9 @@
     <title th:text="${title}"></title>
 
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.0/css/bootstrap.min.css}"/>
-
     <link rel="stylesheet" th:href="@{/css/custom.css}"/>
-
     <link rel="stylesheet" th:href="@{/webjars/font-awesome/5.15.3/css/all.css}"/>
-    <script th:href="@{/webjars/font-awesome/5.15.3/js/all.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-select/1.13.18/css/bootstrap-select.min.css}"/>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -47,8 +45,11 @@
             <li class="nav-item" th:classappend="${active == 'Home'} ? active">
                 <a class="nav-link" th:href="@{/home}">Home</a>
             </li>
-            <li class="nav-item" th:classappend="${active == 'Konfigurator zamówieńa'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
+            <li class="nav-item" th:classappend="${active == 'Konfigurator zamówień'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
                 <a class="nav-link" th:href="@{/client/}">Konfigurator zamówień <sup id="badgeOrderConfigTasks" class="badge badge-pill badge-warning" style="display: none">0</sup></a>
+            </li>
+            <li class="nav-item" th:classappend="${active == 'Nowe zamówienie'} ? active" sec:authorize="hasRole('ROLE_DEALERSHIP')">
+                <a class="nav-link" th:href="@{/orders/newOrderForClient}">Nowe zamówienie</a>
             </li>
             <li class="nav-item" th:classappend="${active == 'Złożone zamówienia'} ? active" sec:authorize="hasRole('ROLE_CLIENT')">
                 <a class="nav-link" th:href="@{/client/orders?active=1}">Złożone zamówienia</a>
@@ -96,14 +97,14 @@
 </div>
 
 <div th:fragment="bootstrap_js">
-    <!-- Bootstrap core JavaScript ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script th:src="@{/webjars/jquery/3.5.1/jquery.min.js}"></script>
-    <script th:src="@{/webjars/bootstrap/4.6.0/js/bootstrap.bundle.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.0/js/bootstrap.js}"></script>
+    <script th:src="@{/webjars/font-awesome/5.15.3/js/all.js}"></script>
     <script th:src="@{/js/customs.js}"></script>
-
+    <script th:src="@{/webjars/bootstrap-select/1.13.18/js/bootstrap-select.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap-select/1.13.18/js/i18n/defaults-pl_PL.js}"></script>
     <script>
-
             $.ajax({
                 type: "GET",
                 contentType: "text/plain",
@@ -134,6 +135,7 @@
                 }
             });
     </script>
+
 </div>
 </body>
 

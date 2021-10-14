@@ -19,6 +19,8 @@ public enum ClientOrderStatusEnum {
 
     Rejected("Odrzucone"),
 
+    Cancelled("Anulowane"),
+
     WaitingForCollection("Gotowe do odbioru"),
 
     Completed("Zakończone"),

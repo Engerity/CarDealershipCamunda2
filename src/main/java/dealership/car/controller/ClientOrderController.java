@@ -3,8 +3,8 @@ package dealership.car.controller;
 import dealership.car.config.ProcessKey;
 import dealership.car.model.*;
 import dealership.car.repository.OrderRepository;
-import dealership.car.service.AvailableResourcesService;
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +29,6 @@ import java.util.*;
 @RequestMapping("/client")
 public class ClientOrderController extends AbstractController {
     private static final Logger log = LoggerFactory.getLogger(ClientOrderController.class);
-
-    @Autowired
-    private AvailableResourcesService availableResourcesService;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -204,7 +201,18 @@ public class ClientOrderController extends AbstractController {
         Order order = new Order();
         order.setOrderInfo(new OrderInfo(orderModel));
         order.setOrderStatusEnum(OrderStatusEnum.Registration);
-        order.setOwner(userDetail.getUser());
+
+        if (userDetail.getUsername().equals(orderModel.getClient())) {
+            order.setOwner(userDetail.getUser());
+        } else if (userDetail.getAuthorities().contains(RoleEnum.ROLE_ADMIN) || userDetail.getAuthorities().contains(RoleEnum.ROLE_DEALERSHIP)) {
+            User user = userRepository.findByName(orderModel.getClient());
+            order.setOwner(user);
+        }
+
+        if (order.getOwner() == null) {
+            redirect.addFlashAttribute("globalError", "Nie można złożyć zamówienia. Niezgodność nazw lub uprawnień uzytkownika.");
+            return "redirect:/client/orders";
+        }
 
         order.setCreationDate(Instant.now().atZone(ZoneId.of("Europe/Warsaw")).toLocalDateTime());
 
@@ -250,7 +258,21 @@ public class ClientOrderController extends AbstractController {
         String newTaskID;
         log.trace("[moveConfigLog] processId={}, stepNum={}, stepName={}", processId, stepNum, name);
         try {
-            newTaskID = camundaProcessService.restartProcessInstance(processId, userDetail.getUsername(), name);
+
+            String username = null;
+            if (userDetail.getUsername().equals(orderModel.getClient())) {
+                username = userDetail.getUsername();
+            } else if (userDetail.getAuthorities().contains(RoleEnum.ROLE_ADMIN) || userDetail.getAuthorities().contains(RoleEnum.ROLE_DEALERSHIP)) {
+                User user = userRepository.findByName(orderModel.getClient());
+                username = user != null ? user.getName() : null;
+            }
+
+            if (username == null) {
+                return new ResponseEntity<>("Niezgodność użytkowników", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            newTaskID = camundaProcessService.restartProcessInstance(processId, username, name);
+
             orderModel.setTaskId(newTaskID);
             camundaProcessService.setVariable(processId, "orderData", orderModel);
         } catch (Exception ex) {
@@ -274,7 +296,20 @@ public class ClientOrderController extends AbstractController {
         Map<String, Object> variables = new HashMap<>();
         variables.put("orderData", orderModel);
         camundaProcessService.completeTask(taskId, variables);
-        List<Task> taskList = camundaProcessService.getTasksForProcessAndAssignee(orderModel.getProcessId(), userDetail.getUsername());
+
+        String username = null;
+        if (userDetail.getUsername().equals(orderModel.getClient())) {
+            username = userDetail.getUsername();
+        } else if (userDetail.getAuthorities().contains(RoleEnum.ROLE_ADMIN) || userDetail.getAuthorities().contains(RoleEnum.ROLE_DEALERSHIP)) {
+            User user = userRepository.findByName(orderModel.getClient());
+            username = user != null ? user.getName() : null;
+        }
+
+        if (username == null) {
+            return new ResponseEntity<>("Niezgodność użytkowników", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        List<Task> taskList = camundaProcessService.getTasksForProcessAndAssignee(orderModel.getProcessId(), username);
         if (!taskList.isEmpty()) {
             orderModel.setTaskId(taskList.get(0).getId());
             camundaProcessService.setVariable(orderModel.getProcessId(), "orderData", orderModel);
@@ -313,16 +348,41 @@ public class ClientOrderController extends AbstractController {
     }
 
     /**
-     * Pomocnicza metoda uzupełnia w modelu zasoby danych konfiguratora zamówień (lista modeli, silników, typów nadwozia itd.)
+     * Obsługuje anulowanie zamówienia przez klienta.
      *
-     * @param model model danych
+     * @param orderId    id zamówienia
+     * @param userDetail informacje o zalogowanym użytkowniku
+     * @param redirect   obiekt informacji przekierowania
+     * @return przekierowanie na listę zamówień
      */
-    private void fillModelWithAvailableResources(Model model) {
-        model.addAttribute("carModels", availableResourcesService.getAvailableModels());
-        model.addAttribute("carEngines", availableResourcesService.getAvailableEngines());
-        model.addAttribute("carBodyTypes", availableResourcesService.getAvailableBodyTypes());
-        model.addAttribute("carTransmissionTypes", availableResourcesService.getAvailableTransmissionTypes());
-        model.addAttribute("carAdditionalEquipments", availableResourcesService.getAvailableAdditionalEquipments());
+    @GetMapping("/cancel/{orderId}")
+    public String cancelOrder(@PathVariable("orderId") Long orderId, @AuthenticationPrincipal UserDetailsSecurity userDetail, RedirectAttributes redirect) {
+        final String REDIRECT_URL = "redirect:/client/orders";
+        Optional<Order> optional = orderRepository.findById(orderId);
+        Order order = optional.orElse(null);
+        if (order == null) {
+            redirect.addFlashAttribute("globalError", "Nie udało się znaleźć zamówienia (" + orderId + ").");
+            return REDIRECT_URL;
+        }
+        if (!userDetail.getUser().getId().equals(order.getOwner().getId())) {
+            redirect.addFlashAttribute("globalError", "Brak uprawnień do wykonania operacji anulowania zamówienia.");
+            return REDIRECT_URL;
+        }
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("cancellationRequestCreator", "dealership");
+        // Wyszukuje procesy po stronie salonu i wysyła wiadomość anulowania
+        for (ProcessInstance processInstance : camundaProcessService.getProcessInstancesForOrderId(orderId+"", new String[]{"CAR_DEALERSHIP_SALON"}))
+            camundaProcessService.createMessage("CancellationMessage", processInstance.getProcessInstanceId(), variables);
+
+        // Wyszukuje procesy po stronie klienta i wysyła wiadomość anulowania
+        for (ProcessInstance processInstance : camundaProcessService.getProcessInstancesForOrderId(orderId+"", new String[]{"CAR_DEALERSHIP_KLIENT"}))
+            camundaProcessService.createMessage("OrderRejectMessage", processInstance.getProcessInstanceId(), variables);
+
+        order.setClientOrderStatusEnum(ClientOrderStatusEnum.Cancelled);
+        orderRepository.save(order);
+
+        return REDIRECT_URL;
     }
 
     /**

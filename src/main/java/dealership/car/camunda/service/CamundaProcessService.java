@@ -341,26 +341,16 @@ public class CamundaProcessService {
     }
 
     /**
-     * Odebranie wiadomości
-     *
-     * @param eventName   nazwa zdarzenia
-     * @param executionId ID wykonania
-     */
-    public void receiveMessage(String eventName, String executionId) {
-        runtimeService.messageEventReceived(eventName, executionId);
-    }
-
-    /**
      * Tworzy nową wiadomość
      *
      * @param messageName nazwa wiadomości
-     * @param businessKey klucz biznesowy procesu
+     * @param processId   ID instancji procesu
      * @param variables   mapa zmiennych
      * @return rezultat z utworzenia wiadomości
      */
-    public MessageCorrelationResult createMessage(String messageName, String businessKey, Map<String, Object> variables) {
+    public MessageCorrelationResult createMessage(String messageName, String processId, Map<String, Object> variables) {
         MessageCorrelationBuilder builder = runtimeService.createMessageCorrelation(messageName)
-                .processInstanceBusinessKey(businessKey);
+                .processInstanceId(processId);
 
         if (variables != null && !variables.isEmpty())
             builder.setVariables(variables);
@@ -386,5 +376,20 @@ public class CamundaProcessService {
      */
     public VariableMap getTaskFormVariables(String taskId) {
         return formService.getTaskFormVariables(taskId);
+    }
+
+    /**
+     * Zwraca listę procesów utworzonych w ramach danego zamówienia
+     *
+     * @param orderId        id zamówienia
+     * @param definitionKeys nazwy kluczy definicji procesów
+     * @return lista procesów
+     */
+    public List<ProcessInstance> getProcessInstancesForOrderId(String orderId, String[] definitionKeys) {
+        ProcessInstanceQuery query = runtimeService.createProcessInstanceQuery();
+        if (definitionKeys != null)
+            query.processDefinitionKeyIn(definitionKeys);
+        query.variableValueEquals("orderId", orderId);
+        return new ArrayList<>(query.list());
     }
 }
