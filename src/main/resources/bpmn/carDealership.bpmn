@@ -392,7 +392,7 @@
           </camunda:formField>
         </camunda:formData>
         <camunda:inputOutput>
-          <camunda:inputParameter name="isAdvancePayment">${true}</camunda:inputParameter>
+          <camunda:outputParameter name="isAdvancePayment">${true}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_193hndg</bpmn:incoming>
@@ -436,7 +436,7 @@
           </camunda:formField>
         </camunda:formData>
         <camunda:inputOutput>
-          <camunda:inputParameter name="isAdvancePayment">${true}</camunda:inputParameter>
+          <camunda:outputParameter name="isAdvancePayment">${true}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1or79a1</bpmn:incoming>
