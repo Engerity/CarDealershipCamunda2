@@ -132,7 +132,7 @@
     </bpmn:subProcess>
     <bpmn:boundaryEvent id="Event_1lgoas7" name="Powiadomienie o zaliczkę" cancelActivity="false" attachedToRef="Klient_OczekiwanieNaZamowienie">
       <bpmn:outgoing>Flow_03rnfi3</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1duggc3" messageRef="Message_1lercw1" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1duggc3" messageRef="Message_1e90ev6" />
     </bpmn:boundaryEvent>
     <bpmn:boundaryEvent id="Event_0g4itnq" name="Powiadomienie o zapłatę" cancelActivity="false" attachedToRef="Klient_OczekiwanieNaZamowienie">
       <bpmn:outgoing>Flow_1tv4kgj</bpmn:outgoing>
