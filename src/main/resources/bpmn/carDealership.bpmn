@@ -90,7 +90,7 @@
       <bpmn:incoming>Flow_10g07bx</bpmn:incoming>
       <bpmn:outgoing>Flow_06mjwsu</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_0miius7" name="Zatwierdź: Zapłata za samochód">
+    <bpmn:userTask id="Activity_0miius7" name="Zatwierdź: Zapłata za samochód" camunda:assignee="${orderData.client}">
       <bpmn:incoming>Flow_1tv4kgj</bpmn:incoming>
       <bpmn:outgoing>Flow_0dih3p5</bpmn:outgoing>
     </bpmn:userTask>
@@ -169,7 +169,19 @@
     <bpmn:sequenceFlow id="Flow_0xknywr" sourceRef="Event_1mi6riw" targetRef="Event_14o6l24" />
     <bpmn:endEvent id="Event_1n21kfa" name="Potwierdzenie zapłaty">
       <bpmn:incoming>Flow_0dih3p5</bpmn:incoming>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_162uyo7" messageRef="Message_0fuk0bu" camunda:delegateExpression="${sendMessageDelegate}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_162uyo7" messageRef="Message_0fuk0bu" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>PaymentConfirmationMessage</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>dealershipProcessId</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
     </bpmn:endEvent>
     <bpmn:endEvent id="Event_14o6l24">
       <bpmn:incoming>Flow_0xknywr</bpmn:incoming>
@@ -355,7 +367,19 @@
     <bpmn:intermediateThrowEvent id="Event_1vayftt" name="Powiadomienie o zapłatę">
       <bpmn:incoming>Flow_0m10n9h</bpmn:incoming>
       <bpmn:outgoing>Flow_1rcbh95</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0jt9zgq" messageRef="Message_0mr9656" camunda:delegateExpression="${sendMessageDelegate}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0jt9zgq" messageRef="Message_0mr9656" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>PaymentNotificationMessage</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>clientProcessId</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
     </bpmn:intermediateThrowEvent>
     <bpmn:userTask id="Salon_RezerwacjaSamoochodu" name="Zarezerwuj samochód w innym salonie" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
@@ -368,7 +392,7 @@
           </camunda:formField>
         </camunda:formData>
         <camunda:inputOutput>
-          <camunda:inputParameter name="isAdvancePayment">true</camunda:inputParameter>
+          <camunda:inputParameter name="isAdvancePayment">${true}</camunda:inputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_193hndg</bpmn:incoming>
@@ -412,7 +436,7 @@
           </camunda:formField>
         </camunda:formData>
         <camunda:inputOutput>
-          <camunda:inputParameter name="isAdvancePayment">true</camunda:inputParameter>
+          <camunda:inputParameter name="isAdvancePayment">${true}</camunda:inputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1or79a1</bpmn:incoming>
