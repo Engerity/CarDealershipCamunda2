@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Kontroler dostępny w ramach operacji Salonu i Fabryki
@@ -96,6 +97,7 @@ public class DealershipOrderController extends AbstractController {
     @GetMapping("/newOrderForClient")
     public String createNewOrderForClient(Model model) {
         List<User> clients = userRepository.findAllByRolesIsIn(Collections.singletonList(RoleEnum.ROLE_CLIENT));
+        clients.removeIf(user -> "system".equalsIgnoreCase(user.getName()) || "admin".equalsIgnoreCase(user.getName()));
         model.addAttribute("clients", clients);
         model.addAttribute("selectedClient", "");
         return "dealership_orderClient";
