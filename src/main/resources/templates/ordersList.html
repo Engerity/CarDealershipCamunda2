@@ -71,7 +71,7 @@
                                    th:href="${'/client/cancel/'+order.id}"
                                    class="btn btn-outline-warning btn-sm mb-2" role="button"> Anuluj <i class="fas fa-ban"></i></a>
 
-                                <a sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_FACTORY_WORKER')"
+                                <a sec:authorize="hasAnyRole('ROLE_DEALERSHIP', 'ROLE_ADMIN')"
                                    th:id="${'cancel_'+order.id}"
                                    th:href="${'/orders/cancel/'+order.id}"
                                    class="btn btn-outline-warning btn-sm mb-2" role="button"> Anuluj <i class="fas fa-ban"></i></a>

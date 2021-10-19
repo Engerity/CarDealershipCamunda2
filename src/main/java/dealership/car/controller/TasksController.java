@@ -228,10 +228,15 @@ public class TasksController extends AbstractController {
             }
         }
 
-        if (variables.isEmpty())
-            camundaProcessService.completeTask(completeTaskModel.getId());
-        else
-            camundaProcessService.completeTask(completeTaskModel.getId(), variables);
+        if (!variables.isEmpty()) {
+            Task t = camundaProcessService.getTaskForId(completeTaskModel.getId());
+            if (t != null) {
+                for (Map.Entry<String, Object> entry : variables.entrySet()) {
+                    camundaProcessService.setVariable(t.getProcessInstanceId(), entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        camundaProcessService.completeTask(completeTaskModel.getId());
 
         redirect.addFlashAttribute("globalMessage", "Pomyślnie ukończone zadanie  id " + completeTaskModel.getId() + ".");
         return "redirect:/tasks";

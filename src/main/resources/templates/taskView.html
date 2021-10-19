@@ -104,6 +104,15 @@
 
     $('#taskId').hide();
 
+    var chks = $('.custom-control-input');
+    if (chks) {
+        chks.change(function () {
+            $(this).val($(this).is(':checked'));
+        });
+
+        chks.trigger('change');
+    }
+
 </script>
 </body>
 </html>
