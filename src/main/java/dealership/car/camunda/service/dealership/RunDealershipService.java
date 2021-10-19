@@ -25,5 +25,6 @@ public class RunDealershipService extends BaseJavaDelegate {
         super.execute(delegateExecution);
         delegateExecution.setVariable("userGroup", RoleEnum.ROLE_DEALERSHIP.getValue());
         delegateExecution.setVariable("assignee", "system");
+        delegateExecution.setVariable("isCarInProduction", true);
     }
 }

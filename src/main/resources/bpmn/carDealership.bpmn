@@ -238,9 +238,6 @@
     <bpmn:receiveTask id="Salon_OdebranieSamochodu_Message" name="Oczekiwanie na samochód" messageRef="TransportFromFactory">
       <bpmn:extensionElements>
         <camunda:executionListener delegateExpression="${receiveCarFromFactoryService}" event="end" />
-        <camunda:inputOutput>
-          <camunda:outputParameter name="isCarInProduction">${false}</camunda:outputParameter>
-        </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1jsrejh</bpmn:incoming>
       <bpmn:outgoing>Flow_0smc25g</bpmn:outgoing>
@@ -262,6 +259,11 @@
       <bpmn:outgoing>Flow_0xzmmgl</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Salon_OdebranieSamochodu" name="Potwierdź odbiór samochodu z fabryki" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="isCarInProduction">${false}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0smc25g</bpmn:incoming>
       <bpmn:outgoing>Flow_13ppjxs</bpmn:outgoing>
     </bpmn:userTask>
@@ -296,6 +298,7 @@
         </camunda:field>
         <camunda:executionListener delegateExpression="${sendMessageToFactory}" event="start" />
         <camunda:inputOutput>
+          <camunda:outputParameter name="carAvailableInProduction">${true}</camunda:outputParameter>
           <camunda:outputParameter name="isCarInProduction">${true}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
@@ -827,6 +830,11 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:outgoing>Flow_1odex8i</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:endEvent id="Event_0kxyq8d" name="Dostarczenie samochodu">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="isCarInProduction">${false}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_10htd3c</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_180klyl" messageRef="TransportFromFactory" camunda:delegateExpression="${sendMessageDelegate}">
         <bpmn:extensionElements>

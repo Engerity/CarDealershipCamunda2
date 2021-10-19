@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.impl.el.FixedValue;
 import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.springframework.stereotype.Component;
 
 /**
@@ -53,7 +54,12 @@ public class SendMessageJavaDelegate extends BaseJavaDelegate {
         super.execute(delegateExecution);
 
         if ("true".equals(startProcess.getExpressionText())) {
-            runtimeService.startProcessInstanceByMessage(messageName.getExpressionText(), delegateExecution.getVariables());
+            ProcessInstance pi = runtimeService.startProcessInstanceByMessage(messageName.getExpressionText(), delegateExecution.getVariables());
+            if ("SentToDealership".equals(messageName.getExpressionText())) {
+                runtimeService.setVariable(getProcessInstanceId(delegateExecution),"dealershipProcessId", pi.getProcessInstanceId());
+            } else if ("AskFactoryMessage".equals(messageName.getExpressionText())) {
+                runtimeService.setVariable(getProcessInstanceId(delegateExecution),"factoryProcessId", pi.getProcessInstanceId());
+            }
 
         } else {
             MessageCorrelationBuilder builder = runtimeService.createMessageCorrelation(messageName.getExpressionText());
