@@ -4,14 +4,17 @@
     <bpmn:participant id="Participant_1stwjmk" name="Klient" processRef="CAR_DEALERSHIP_KLIENT" />
     <bpmn:participant id="Participant_019rtvj" name="Salon samochodowy" processRef="CAR_DEALERSHIP_SALON" />
     <bpmn:participant id="Participant_1p8kbk3" name="Fabryka" processRef="CAR_DEALERSHIP_FACTORY" />
-    <bpmn:messageFlow id="Flow_1uuc7ou" sourceRef="Activity_1eoly0v" targetRef="Fabryka_Start" />
-    <bpmn:messageFlow id="Flow_18xshp5" sourceRef="Fabryka_WyslanieInformacjiDoSalonu" targetRef="Activity_1kuy6zb" />
+    <bpmn:messageFlow id="Flow_1uuc7ou" sourceRef="Salon_WyslanieDoFabryki" targetRef="Fabryka_Start" />
+    <bpmn:messageFlow id="Flow_18xshp5" sourceRef="Fabryka_WyslanieInformacjiDoSalonu" targetRef="Salon_Oczekiwanie" />
     <bpmn:messageFlow id="Flow_0mex7uu" sourceRef="Klient_WyslanieZamowienia" targetRef="Salon_Start" />
-    <bpmn:messageFlow id="Flow_0hupi12" sourceRef="Event_0kxyq8d" targetRef="Salon_OdebranieSamochodu_Message" />
+    <bpmn:messageFlow id="Flow_0hupi12" sourceRef="Fabryka_WiadomoscKoniec" targetRef="Salon_OdebranieSamochodu_Message" />
     <bpmn:messageFlow id="Flow_1qy2p1l" sourceRef="Salon_WyslanieInfoDoKlienta" targetRef="Klient_OczekiwanieNaZamowienie" />
   </bpmn:collaboration>
   <bpmn:process id="CAR_DEALERSHIP_KLIENT" name="Car Dealership (Klient)" isExecutable="true">
     <bpmn:endEvent id="Klient_Zaliczka_Koniec" name="Wpłacenie zaliczki">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${sendAdvancePayment}" event="start" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1f2n8i8</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0ycmox4" messageRef="Message_1lercw1" camunda:delegateExpression="${sendMessageDelegate}">
         <bpmn:extensionElements>
@@ -24,6 +27,9 @@
           <camunda:field name="correlateProcessInstanceVar">
             <camunda:string>dealershipProcessId</camunda:string>
           </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>InProgress</camunda:string>
+          </camunda:field>
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:endEvent>
@@ -31,8 +37,9 @@
       <bpmn:incoming>Flow_03rnfi3</bpmn:incoming>
       <bpmn:outgoing>Flow_1f2n8i8</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="Event_19bt3du">
+    <bpmn:endEvent id="Klient_Zakonczenie1">
       <bpmn:incoming>Flow_0y7yfel</bpmn:incoming>
+      <bpmn:incoming>Flow_0n6fiwb</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:receiveTask id="Klient_OczekiwanieNaZamowienie" name="Oczekiwanie na zamówienie" messageRef="WaitingForCollection">
       <bpmn:extensionElements>
@@ -63,7 +70,7 @@
       <bpmn:incoming>Flow_1z0cv6z</bpmn:incoming>
       <bpmn:incoming>Flow_062qcqg</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:startEvent id="Event_13ynu74" name="Rozpoczęcie zamówienia">
+    <bpmn:startEvent id="Klient_Start" name="Rozpoczęcie zamówienia">
       <bpmn:outgoing>Flow_1acdvot</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:sendTask id="Klient_WyslanieZamowienia" name="Wysłanie zamówienia" camunda:delegateExpression="${sendMessageDelegate}">
@@ -90,7 +97,7 @@
       <bpmn:incoming>Flow_10g07bx</bpmn:incoming>
       <bpmn:outgoing>Flow_06mjwsu</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_0miius7" name="Zatwierdź: Zapłata za samochód" camunda:assignee="${orderData.client}">
+    <bpmn:userTask id="Klient_ZaplacZamowienie" name="Zatwierdź: Zapłata za samochód" camunda:assignee="${orderData.client}">
       <bpmn:incoming>Flow_1tv4kgj</bpmn:incoming>
       <bpmn:outgoing>Flow_0dih3p5</bpmn:outgoing>
     </bpmn:userTask>
@@ -101,14 +108,14 @@
       <bpmn:sequenceFlow id="Flow_0wyqfm4" sourceRef="Klient_Konfiguracja_Silnik" targetRef="Klient_Konfiguracja_TypNadwozia" />
       <bpmn:sequenceFlow id="Flow_0ji1hqm" sourceRef="Klient_Konfiguracja_TypNadwozia" targetRef="Klient_Konfiguracja_SkrzyniaBiegow" />
       <bpmn:sequenceFlow id="Flow_0dkx2f6" sourceRef="Klient_Konfiguracja_SkrzyniaBiegow" targetRef="Klient_Konfiguracja_WyposazenieDodatkowe" />
-      <bpmn:startEvent id="Event_1yyhf9t">
+      <bpmn:startEvent id="Klient_Konfiguracja_Start">
         <bpmn:outgoing>Flow_1v6tyn2</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:sequenceFlow id="Flow_1v6tyn2" sourceRef="Event_1yyhf9t" targetRef="Klient_Konfiguracja_Model" />
-      <bpmn:endEvent id="Event_1ejmm5y">
+      <bpmn:sequenceFlow id="Flow_1v6tyn2" sourceRef="Klient_Konfiguracja_Start" targetRef="Klient_Konfiguracja_Model" />
+      <bpmn:endEvent id="Klient_Konfiguracja_Koniec">
         <bpmn:incoming>Flow_0t4s1fg</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_0t4s1fg" sourceRef="Klient_Konfiguracja_WyposazenieDodatkowe" targetRef="Event_1ejmm5y" />
+      <bpmn:sequenceFlow id="Flow_0t4s1fg" sourceRef="Klient_Konfiguracja_WyposazenieDodatkowe" targetRef="Klient_Konfiguracja_Koniec" />
       <bpmn:userTask id="Klient_Konfiguracja_Model" name="Model" camunda:assignee="${assignee}">
         <bpmn:incoming>Flow_1v6tyn2</bpmn:incoming>
         <bpmn:outgoing>Flow_0z0inah</bpmn:outgoing>
@@ -130,11 +137,11 @@
         <bpmn:outgoing>Flow_0t4s1fg</bpmn:outgoing>
       </bpmn:userTask>
     </bpmn:subProcess>
-    <bpmn:boundaryEvent id="Event_1lgoas7" name="Powiadomienie o zaliczkę" cancelActivity="false" attachedToRef="Klient_OczekiwanieNaZamowienie">
+    <bpmn:boundaryEvent id="Klient_Powiadomienie_Zaliczka" name="Powiadomienie o zaliczkę" cancelActivity="false" attachedToRef="Klient_OczekiwanieNaZamowienie">
       <bpmn:outgoing>Flow_03rnfi3</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1duggc3" messageRef="Message_1e90ev6" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Event_0g4itnq" name="Powiadomienie o zapłatę" cancelActivity="false" attachedToRef="Klient_OczekiwanieNaZamowienie">
+    <bpmn:boundaryEvent id="Klient_Powiadomienie_Zaplata" name="Powiadomienie o zapłatę" cancelActivity="false" attachedToRef="Klient_OczekiwanieNaZamowienie">
       <bpmn:outgoing>Flow_1tv4kgj</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0zew8cd" messageRef="Message_0mr9656" />
     </bpmn:boundaryEvent>
@@ -148,7 +155,7 @@
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30M</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Event_1mi6riw" name="max 30 min" attachedToRef="Activity_0miius7">
+    <bpmn:boundaryEvent id="Klient_Timer2" name="max 30 min" attachedToRef="Klient_ZaplacZamowienie">
       <bpmn:outgoing>Flow_0xknywr</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_0qpu7c2">
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30M</bpmn:timeDuration>
@@ -158,16 +165,16 @@
     <bpmn:sequenceFlow id="Flow_1z0cv6z" sourceRef="Klient_OdebranieSamochodu" targetRef="Klient_Zakonczenie" />
     <bpmn:sequenceFlow id="Flow_1deqyxk" sourceRef="Klient_WyslanieZamowienia" targetRef="Klient_OczekiwanieNaZamowienie" />
     <bpmn:sequenceFlow id="Flow_062qcqg" sourceRef="Klient_OdebranieOdrzucenia" targetRef="Klient_Zakonczenie" />
-    <bpmn:sequenceFlow id="Flow_1tv4kgj" sourceRef="Event_0g4itnq" targetRef="Activity_0miius7" />
-    <bpmn:sequenceFlow id="Flow_0dih3p5" sourceRef="Activity_0miius7" targetRef="Event_1n21kfa" />
-    <bpmn:sequenceFlow id="Flow_03rnfi3" sourceRef="Event_1lgoas7" targetRef="Klient_ZaplacZaliczke" />
+    <bpmn:sequenceFlow id="Flow_1tv4kgj" sourceRef="Klient_Powiadomienie_Zaplata" targetRef="Klient_ZaplacZamowienie" />
+    <bpmn:sequenceFlow id="Flow_0dih3p5" sourceRef="Klient_ZaplacZamowienie" targetRef="Klient_Zaplata_Koniec" />
+    <bpmn:sequenceFlow id="Flow_03rnfi3" sourceRef="Klient_Powiadomienie_Zaliczka" targetRef="Klient_ZaplacZaliczke" />
     <bpmn:sequenceFlow id="Flow_1f2n8i8" sourceRef="Klient_ZaplacZaliczke" targetRef="Klient_Zaliczka_Koniec" />
-    <bpmn:sequenceFlow id="Flow_0y7yfel" sourceRef="Klient_Timer1" targetRef="Event_19bt3du" />
-    <bpmn:sequenceFlow id="Flow_1acdvot" sourceRef="Event_13ynu74" targetRef="Klient_Konfiguracja" />
+    <bpmn:sequenceFlow id="Flow_0y7yfel" sourceRef="Klient_Timer1" targetRef="Klient_Zakonczenie1" />
+    <bpmn:sequenceFlow id="Flow_1acdvot" sourceRef="Klient_Start" targetRef="Klient_Konfiguracja" />
     <bpmn:sequenceFlow id="Flow_10g07bx" sourceRef="Klient_Konfiguracja" targetRef="Klient_ZlozenieZamowienia" />
     <bpmn:sequenceFlow id="Flow_06mjwsu" sourceRef="Klient_ZlozenieZamowienia" targetRef="Klient_WyslanieZamowienia" />
-    <bpmn:sequenceFlow id="Flow_0xknywr" sourceRef="Event_1mi6riw" targetRef="Event_14o6l24" />
-    <bpmn:endEvent id="Event_1n21kfa" name="Potwierdzenie zapłaty">
+    <bpmn:sequenceFlow id="Flow_0xknywr" sourceRef="Klient_Timer2" targetRef="Klient_Zakonczenie2" />
+    <bpmn:endEvent id="Klient_Zaplata_Koniec" name="Potwierdzenie zapłaty">
       <bpmn:incoming>Flow_0dih3p5</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_162uyo7" messageRef="Message_0fuk0bu" camunda:delegateExpression="${sendMessageDelegate}">
         <bpmn:extensionElements>
@@ -180,12 +187,26 @@
           <camunda:field name="correlateProcessInstanceVar">
             <camunda:string>dealershipProcessId</camunda:string>
           </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>InProgress</camunda:string>
+          </camunda:field>
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:endEvent>
-    <bpmn:endEvent id="Event_14o6l24">
+    <bpmn:endEvent id="Klient_Zakonczenie2">
       <bpmn:incoming>Flow_0xknywr</bpmn:incoming>
+      <bpmn:incoming>Flow_0xvgbbk</bpmn:incoming>
     </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0n6fiwb" sourceRef="Klient_AnulowanieZaliczki" targetRef="Klient_Zakonczenie1" />
+    <bpmn:boundaryEvent id="Klient_AnulowanieZaplaty" name="Anulowanie powiadomienia" attachedToRef="Klient_ZaplacZamowienie">
+      <bpmn:outgoing>Flow_0xvgbbk</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0quvo9o" messageRef="Message_1tznic0" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0xvgbbk" sourceRef="Klient_AnulowanieZaplaty" targetRef="Klient_Zakonczenie2" />
+    <bpmn:boundaryEvent id="Klient_AnulowanieZaliczki" name="Anulowanie powiadomienia" attachedToRef="Klient_ZaplacZaliczke">
+      <bpmn:outgoing>Flow_0n6fiwb</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_065gfw5" messageRef="Message_11rlt5y" />
+    </bpmn:boundaryEvent>
   </bpmn:process>
   <bpmn:process id="CAR_DEALERSHIP_SALON" name="Car Dealership (Salon)" isExecutable="true">
     <bpmn:intermediateThrowEvent id="Salon_PowiadomienieZaliczka" name="Powiadomienie o zaliczce">
@@ -208,14 +229,14 @@
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:intermediateThrowEvent>
-    <bpmn:receiveTask id="Salon_OdebranieZaliczki" name="Oczekiwanie na zaliczkę" messageRef="Message_1lercw1">
+    <bpmn:receiveTask id="Salon_OczekiwanieZaliczka" name="Oczekiwanie na zaliczkę" messageRef="Message_1lercw1">
       <bpmn:extensionElements>
         <camunda:executionListener delegateExpression="${advancePaymentReceivedService}" event="end" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1ict2hd</bpmn:incoming>
       <bpmn:outgoing>Flow_0tq4ocz</bpmn:outgoing>
     </bpmn:receiveTask>
-    <bpmn:exclusiveGateway id="Gateway_0osccbx" name="Czy samochód dostępny w innym salonie?">
+    <bpmn:exclusiveGateway id="Salon_CzySamochodWInnymSalonie" name="Czy samochód dostępny w innym salonie?">
       <bpmn:incoming>Flow_0tq4ocz</bpmn:incoming>
       <bpmn:outgoing>Flow_193hndg</bpmn:outgoing>
       <bpmn:outgoing>Flow_1or79a1</bpmn:outgoing>
@@ -258,16 +279,7 @@
       <bpmn:incoming>Flow_13ppjxs</bpmn:incoming>
       <bpmn:outgoing>Flow_0xzmmgl</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Salon_OdebranieSamochodu" name="Potwierdź odbiór samochodu z fabryki" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
-      <bpmn:extensionElements>
-        <camunda:inputOutput>
-          <camunda:inputParameter name="isCarInProduction">${false}</camunda:inputParameter>
-        </camunda:inputOutput>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0smc25g</bpmn:incoming>
-      <bpmn:outgoing>Flow_13ppjxs</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Gateway_040mdww" name="Czy możliwa produkcja w fabryce?">
+    <bpmn:exclusiveGateway id="Salon_CzyMozliwaProdukcja" name="Czy możliwa produkcja w fabryce?">
       <bpmn:incoming>Flow_0pa26s6</bpmn:incoming>
       <bpmn:outgoing>Flow_1jsrejh</bpmn:outgoing>
       <bpmn:outgoing>Flow_0y9ufqj</bpmn:outgoing>
@@ -285,7 +297,7 @@
       <bpmn:incoming>Flow_0y9ufqj</bpmn:incoming>
       <bpmn:outgoing>Flow_1mvzxsi</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sendTask id="Activity_1eoly0v" name="Wysłanie zamówienia do fabryki" camunda:delegateExpression="${sendMessageDelegate}">
+    <bpmn:sendTask id="Salon_WyslanieDoFabryki" name="Wysłanie zamówienia do fabryki" camunda:delegateExpression="${sendMessageDelegate}">
       <bpmn:extensionElements>
         <camunda:field name="messageName">
           <camunda:string>AskFactoryMessage</camunda:string>
@@ -321,7 +333,7 @@
         <camunda:taskListener delegateExpression="${orderAcceptance}" event="complete" id="OrderAcceptance" />
         <camunda:inputOutput>
           <camunda:outputParameter name="isCarInProduction">${false}</camunda:outputParameter>
-          <camunda:outputParameter name="cancellationRequestCreator">dealership</camunda:outputParameter>
+          <camunda:outputParameter name="cancellationRequestCreator">client</camunda:outputParameter>
           <camunda:outputParameter name="isAdvancePayment">${false}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
@@ -381,6 +393,9 @@
           <camunda:field name="correlateProcessInstanceVar">
             <camunda:string>clientProcessId</camunda:string>
           </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>WaitingForPayment</camunda:string>
+          </camunda:field>
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:intermediateThrowEvent>
@@ -405,7 +420,7 @@
       <bpmn:incoming>Flow_0p0u6lg</bpmn:incoming>
       <bpmn:outgoing>Flow_1ihxqnq</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:receiveTask id="Activity_1kuy6zb" name="Oczekiwanie na akceptację zamówienia" messageRef="ResponseFactory">
+    <bpmn:receiveTask id="Salon_Oczekiwanie" name="Oczekiwanie na akceptację zamówienia" messageRef="ResponseFactory">
       <bpmn:extensionElements>
         <camunda:executionListener delegateExpression="${receiveFactoryMessageService}" event="end" />
         <camunda:inputOutput>
@@ -416,18 +431,10 @@
       <bpmn:incoming>Flow_14kzvwe</bpmn:incoming>
       <bpmn:outgoing>Flow_0pa26s6</bpmn:outgoing>
     </bpmn:receiveTask>
-    <bpmn:receiveTask id="Activity_0siyi1l" name="Oczekiwanie na zapłatę" messageRef="Message_0fuk0bu">
+    <bpmn:receiveTask id="Salon_OczekiwanieZaplata" name="Oczekiwanie na zapłatę" messageRef="Message_0fuk0bu">
       <bpmn:incoming>Flow_1rcbh95</bpmn:incoming>
       <bpmn:outgoing>Flow_0ml8cs3</bpmn:outgoing>
     </bpmn:receiveTask>
-    <bpmn:task id="Activity_08vhtim" name="Depozyt samochodu">
-      <bpmn:incoming>Flow_19mzjbd</bpmn:incoming>
-      <bpmn:incoming>Flow_09b37f2</bpmn:incoming>
-      <bpmn:incoming>Flow_068i9g0</bpmn:incoming>
-      <bpmn:incoming>Flow_1n4rrgo</bpmn:incoming>
-      <bpmn:incoming>Flow_0xy73im</bpmn:incoming>
-      <bpmn:outgoing>Flow_1l9we7b</bpmn:outgoing>
-    </bpmn:task>
     <bpmn:userTask id="Salon_ZlozenieZamowienia" name="Wyślij zamówienie do fabryki" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
       <bpmn:extensionElements>
         <camunda:formData>
@@ -448,7 +455,6 @@
     <bpmn:subProcess id="Salon_Anulowanie" name="Obsługa anulowania zamówienia">
       <bpmn:incoming>Flow_1mvzxsi</bpmn:incoming>
       <bpmn:incoming>Flow_16zxbp5</bpmn:incoming>
-      <bpmn:incoming>Flow_051sr0h</bpmn:incoming>
       <bpmn:incoming>Flow_0lqo2p5</bpmn:incoming>
       <bpmn:incoming>Flow_1l9we7b</bpmn:incoming>
       <bpmn:incoming>Flow_0kbx0mu</bpmn:incoming>
@@ -458,6 +464,7 @@
       <bpmn:incoming>Flow_1vuc5lz</bpmn:incoming>
       <bpmn:incoming>Flow_1kdv8j0</bpmn:incoming>
       <bpmn:incoming>Flow_0ojctu1</bpmn:incoming>
+      <bpmn:incoming>Flow_09mlmuj</bpmn:incoming>
       <bpmn:startEvent id="Anulowanie_Start">
         <bpmn:outgoing>Flow_1nzq1xe</bpmn:outgoing>
       </bpmn:startEvent>
@@ -467,37 +474,37 @@
         <bpmn:outgoing>Flow_12rjhds</bpmn:outgoing>
         <bpmn:outgoing>Flow_0ktakcs</bpmn:outgoing>
       </bpmn:parallelGateway>
-      <bpmn:exclusiveGateway id="Anulowanie_Gateway2" name="Czy samochód w produkcji?">
+      <bpmn:exclusiveGateway id="Anulowanie_CzySamochodWProdukcji" name="Czy samochód w produkcji?">
         <bpmn:incoming>Flow_12rjhds</bpmn:incoming>
         <bpmn:outgoing>Flow_136fgwk</bpmn:outgoing>
         <bpmn:outgoing>Flow_0ec1ub9</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_12rjhds" sourceRef="Anulowanie_Gateway1" targetRef="Anulowanie_Gateway2" />
-      <bpmn:exclusiveGateway id="Anulowanie_Gateway3" name="Na czyj wniosek?">
+      <bpmn:sequenceFlow id="Flow_12rjhds" sourceRef="Anulowanie_Gateway1" targetRef="Anulowanie_CzySamochodWProdukcji" />
+      <bpmn:exclusiveGateway id="Anulowanie_NaCzyjWniosek" name="Na czyj wniosek?">
         <bpmn:incoming>Flow_0ktakcs</bpmn:incoming>
         <bpmn:outgoing>Flow_08lrkwj</bpmn:outgoing>
         <bpmn:outgoing>Flow_1sq3vk8</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_0ktakcs" sourceRef="Anulowanie_Gateway1" targetRef="Anulowanie_Gateway3" />
-      <bpmn:exclusiveGateway id="Anulowanie_Gateway4" name="Czy wpłacono zaliczkę?">
+      <bpmn:sequenceFlow id="Flow_0ktakcs" sourceRef="Anulowanie_Gateway1" targetRef="Anulowanie_NaCzyjWniosek" />
+      <bpmn:exclusiveGateway id="Anulowanie_CzyWplaconoZaliczke" name="Czy wpłacono zaliczkę?">
         <bpmn:incoming>Flow_08lrkwj</bpmn:incoming>
         <bpmn:outgoing>Flow_0htd62w</bpmn:outgoing>
         <bpmn:outgoing>Flow_1ndxxq6</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_08lrkwj" name="Fabryka/Salon" sourceRef="Anulowanie_Gateway3" targetRef="Anulowanie_Gateway4">
+      <bpmn:sequenceFlow id="Flow_08lrkwj" name="Fabryka/Salon" sourceRef="Anulowanie_NaCzyjWniosek" targetRef="Anulowanie_CzyWplaconoZaliczke">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cancellationRequestCreator != 'client'}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:sequenceFlow id="Flow_1sq3vk8" name="Klient" sourceRef="Anulowanie_Gateway3" targetRef="Anulowanie_Koniec">
+      <bpmn:sequenceFlow id="Flow_1sq3vk8" name="Klient" sourceRef="Anulowanie_NaCzyjWniosek" targetRef="Anulowanie_Koniec">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cancellationRequestCreator == 'client'}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:sequenceFlow id="Flow_0htd62w" name="Tak&#10;&#10;" sourceRef="Anulowanie_Gateway4" targetRef="Anulowanie_ZwrotZaliczki">
+      <bpmn:sequenceFlow id="Flow_0htd62w" name="Tak&#10;&#10;" sourceRef="Anulowanie_CzyWplaconoZaliczke" targetRef="Anulowanie_ZwrotZaliczki">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isAdvancePayment}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_1x4bs0v" sourceRef="Anulowanie_ZwrotZaliczki" targetRef="Anulowanie_WiadomoscKlient" />
-      <bpmn:sequenceFlow id="Flow_1ndxxq6" name="Nie&#10;&#10;" sourceRef="Anulowanie_Gateway4" targetRef="Anulowanie_WiadomoscKlient">
+      <bpmn:sequenceFlow id="Flow_1ndxxq6" name="Nie&#10;&#10;" sourceRef="Anulowanie_CzyWplaconoZaliczke" targetRef="Anulowanie_WiadomoscKlient">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not isAdvancePayment}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:sequenceFlow id="Flow_136fgwk" name="Tak&#10;&#10;" sourceRef="Anulowanie_Gateway2" targetRef="Anulowanie_WiadomoscFabryka">
+      <bpmn:sequenceFlow id="Flow_136fgwk" name="Tak&#10;&#10;" sourceRef="Anulowanie_CzySamochodWProdukcji" targetRef="Anulowanie_WiadomoscFabryka">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isCarInProduction}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:endEvent id="Anulowanie_WiadomoscFabryka" name="Wysłanie anulowania do fabryki">
@@ -513,10 +520,13 @@
             <camunda:field name="correlateProcessInstanceVar">
               <camunda:string>factoryProcessId</camunda:string>
             </camunda:field>
+            <camunda:field name="newOrderStatus">
+              <camunda:string>N/A</camunda:string>
+            </camunda:field>
           </bpmn:extensionElements>
         </bpmn:messageEventDefinition>
       </bpmn:endEvent>
-      <bpmn:userTask id="Anulowanie_ZwrotZaliczki" name="Wykonaj: Zwrot zaliczki" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:userTask id="Anulowanie_ZwrotZaliczki" name="Wykonaj: Zwrot zaliczki" camunda:assignee="system" camunda:candidateGroups="ROLE_DEALERSHIP">
         <bpmn:incoming>Flow_0htd62w</bpmn:incoming>
         <bpmn:outgoing>Flow_1x4bs0v</bpmn:outgoing>
       </bpmn:userTask>
@@ -540,10 +550,10 @@
           </bpmn:extensionElements>
         </bpmn:messageEventDefinition>
       </bpmn:endEvent>
-      <bpmn:endEvent id="Event_07z3rbd">
+      <bpmn:endEvent id="Anulowanie_Koniec1">
         <bpmn:incoming>Flow_0ec1ub9</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_0ec1ub9" name="Nie" sourceRef="Anulowanie_Gateway2" targetRef="Event_07z3rbd">
+      <bpmn:sequenceFlow id="Flow_0ec1ub9" name="Nie" sourceRef="Anulowanie_CzySamochodWProdukcji" targetRef="Anulowanie_Koniec1">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not isCarInProduction}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:endEvent id="Anulowanie_Koniec">
@@ -554,19 +564,15 @@
       <bpmn:outgoing>Flow_0lqo2p5</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1dyang0" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Salon_mAnulowanie2" name="Anulowanie (klient)" attachedToRef="Salon_OdebranieZaliczki">
+    <bpmn:boundaryEvent id="Salon_mAnulowanie2" name="Anulowanie (klient)" attachedToRef="Salon_OczekiwanieZaliczka">
       <bpmn:outgoing>Flow_051sr0h</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1cl3mam" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Salon_Timer1" name="max 30 min" attachedToRef="Salon_OdebranieZaliczki">
+    <bpmn:boundaryEvent id="Salon_Timer1" name="max 30 min" attachedToRef="Salon_OczekiwanieZaliczka">
       <bpmn:outgoing>Flow_16zxbp5</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_10xdvrp">
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30M</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
-    </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Salon_mAnulowanie10" name="Anulowanie (klient)" attachedToRef="Salon_OdebranieSamochodu">
-      <bpmn:outgoing>Flow_19mzjbd</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_013foum" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
     <bpmn:boundaryEvent id="Salon_mAnulowanie11" name="Anulowanie (klient)" attachedToRef="Salon_KontrolaJakosci">
       <bpmn:outgoing>Flow_09b37f2</bpmn:outgoing>
@@ -576,11 +582,11 @@
       <bpmn:outgoing>Flow_068i9g0</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0iud7w8" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Salon_mAnulowanie13" name="Anulowanie (klient)" attachedToRef="Activity_0siyi1l">
+    <bpmn:boundaryEvent id="Salon_mAnulowanie13" name="Anulowanie (klient)" attachedToRef="Salon_OczekiwanieZaplata">
       <bpmn:outgoing>Flow_1n4rrgo</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0o7sowr" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Salon_Timer2" name="max 30 min" attachedToRef="Activity_0siyi1l">
+    <bpmn:boundaryEvent id="Salon_Timer2" name="max 30 min" attachedToRef="Salon_OczekiwanieZaplata">
       <bpmn:outgoing>Flow_0xy73im</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_1p2ob8h">
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30M</bpmn:timeDuration>
@@ -602,7 +608,7 @@
       <bpmn:outgoing>Flow_0wbv721</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_05uupgd" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="Salon_mAnulowanie7" name="Anulowanie (klient)" attachedToRef="Activity_1kuy6zb">
+    <bpmn:boundaryEvent id="Salon_mAnulowanie7" name="Anulowanie (klient)" attachedToRef="Salon_Oczekiwanie">
       <bpmn:outgoing>Flow_1vuc5lz</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1uxzl3s" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
@@ -615,18 +621,18 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition_0dkxhad" messageRef="Message_0per3tu" />
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_0lqo2p5" sourceRef="Salon_mAnulowanie1" targetRef="Salon_Anulowanie" />
-    <bpmn:sequenceFlow id="Flow_051sr0h" sourceRef="Salon_mAnulowanie2" targetRef="Salon_Anulowanie" />
+    <bpmn:sequenceFlow id="Flow_051sr0h" sourceRef="Salon_mAnulowanie2" targetRef="Salon_AnulowanieZaliczka" />
     <bpmn:sequenceFlow id="Flow_16zxbp5" sourceRef="Salon_Timer1" targetRef="Salon_Anulowanie" />
-    <bpmn:sequenceFlow id="Flow_1ict2hd" sourceRef="Salon_PowiadomienieZaliczka" targetRef="Salon_OdebranieZaliczki" />
+    <bpmn:sequenceFlow id="Flow_1ict2hd" sourceRef="Salon_PowiadomienieZaliczka" targetRef="Salon_OczekiwanieZaliczka" />
     <bpmn:sequenceFlow id="Flow_1mvzxsi" sourceRef="Salon_OdrzucenieZamwoienia" targetRef="Salon_Anulowanie" />
-    <bpmn:sequenceFlow id="Flow_10l6mti" sourceRef="Salon_ZlozenieZamowienia" targetRef="Activity_1eoly0v" />
-    <bpmn:sequenceFlow id="Flow_1or79a1" name="Nie" sourceRef="Gateway_0osccbx" targetRef="Salon_ZlozenieZamowienia">
+    <bpmn:sequenceFlow id="Flow_10l6mti" sourceRef="Salon_ZlozenieZamowienia" targetRef="Salon_WyslanieDoFabryki" />
+    <bpmn:sequenceFlow id="Flow_1or79a1" name="Nie" sourceRef="Salon_CzySamochodWInnymSalonie" targetRef="Salon_ZlozenieZamowienia">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInOtherDealership}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0p0u6lg" sourceRef="Salon_RezerwacjaSamoochodu" targetRef="Salon_PrzygotowanieDoTransportu" />
     <bpmn:sequenceFlow id="Flow_01bws94" sourceRef="Salon_TransportSamochodu" targetRef="Salon_KontrolaJakosci" />
     <bpmn:sequenceFlow id="Flow_1ihxqnq" sourceRef="Salon_PrzygotowanieDoTransportu" targetRef="Salon_TransportSamochodu" />
-    <bpmn:sequenceFlow id="Flow_193hndg" name="Tak" sourceRef="Gateway_0osccbx" targetRef="Salon_RezerwacjaSamoochodu">
+    <bpmn:sequenceFlow id="Flow_193hndg" name="Tak" sourceRef="Salon_CzySamochodWInnymSalonie" targetRef="Salon_RezerwacjaSamoochodu">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailableInOtherDealership}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1mndl2w" name="Nie" sourceRef="Salon_CzySamochodDostepnyWSalonie" targetRef="Salon_PowiadomienieZaliczka">
@@ -638,27 +644,27 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailable}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0nlezkx" sourceRef="Salon_PrzygotowanieSamochodu" targetRef="Salon_GotoweDoOdbioru" />
-    <bpmn:sequenceFlow id="Flow_0y9ufqj" name="Nie" sourceRef="Gateway_040mdww" targetRef="Salon_OdrzucenieZamwoienia">
+    <bpmn:sequenceFlow id="Flow_0y9ufqj" name="Nie" sourceRef="Salon_CzyMozliwaProdukcja" targetRef="Salon_OdrzucenieZamwoienia">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInProduction}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1jsrejh" name="Tak" sourceRef="Gateway_040mdww" targetRef="Salon_OdebranieSamochodu_Message">
+    <bpmn:sequenceFlow id="Flow_1jsrejh" name="Tak" sourceRef="Salon_CzyMozliwaProdukcja" targetRef="Salon_OdebranieSamochodu_Message">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailableInProduction}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0m10n9h" sourceRef="Salon_GotoweDoOdbioru" targetRef="Event_1vayftt" />
-    <bpmn:sequenceFlow id="Flow_0tq4ocz" sourceRef="Salon_OdebranieZaliczki" targetRef="Gateway_0osccbx" />
+    <bpmn:sequenceFlow id="Flow_0tq4ocz" sourceRef="Salon_OczekiwanieZaliczka" targetRef="Salon_CzySamochodWInnymSalonie" />
     <bpmn:sequenceFlow id="Flow_0xzmmgl" sourceRef="Salon_KontrolaJakosci" targetRef="Salon_PrzygotowanieSamochodu" />
     <bpmn:sequenceFlow id="Flow_0smc25g" sourceRef="Salon_OdebranieSamochodu_Message" targetRef="Salon_OdebranieSamochodu" />
     <bpmn:sequenceFlow id="Flow_13ppjxs" sourceRef="Salon_OdebranieSamochodu" targetRef="Salon_KontrolaJakosci" />
-    <bpmn:sequenceFlow id="Flow_1rcbh95" sourceRef="Event_1vayftt" targetRef="Activity_0siyi1l" />
-    <bpmn:sequenceFlow id="Flow_14kzvwe" sourceRef="Activity_1eoly0v" targetRef="Activity_1kuy6zb" />
-    <bpmn:sequenceFlow id="Flow_0pa26s6" sourceRef="Activity_1kuy6zb" targetRef="Gateway_040mdww" />
-    <bpmn:sequenceFlow id="Flow_19mzjbd" sourceRef="Salon_mAnulowanie10" targetRef="Activity_08vhtim" />
-    <bpmn:sequenceFlow id="Flow_09b37f2" sourceRef="Salon_mAnulowanie11" targetRef="Activity_08vhtim" />
-    <bpmn:sequenceFlow id="Flow_068i9g0" sourceRef="Salon_mAnulowanie12" targetRef="Activity_08vhtim" />
-    <bpmn:sequenceFlow id="Flow_0ml8cs3" sourceRef="Activity_0siyi1l" targetRef="Salon_WyslanieInfoDoKlienta" />
-    <bpmn:sequenceFlow id="Flow_1n4rrgo" sourceRef="Salon_mAnulowanie13" targetRef="Activity_08vhtim" />
-    <bpmn:sequenceFlow id="Flow_1l9we7b" sourceRef="Activity_08vhtim" targetRef="Salon_Anulowanie" />
-    <bpmn:sequenceFlow id="Flow_0xy73im" sourceRef="Salon_Timer2" targetRef="Activity_08vhtim" />
+    <bpmn:sequenceFlow id="Flow_1rcbh95" sourceRef="Event_1vayftt" targetRef="Salon_OczekiwanieZaplata" />
+    <bpmn:sequenceFlow id="Flow_14kzvwe" sourceRef="Salon_WyslanieDoFabryki" targetRef="Salon_Oczekiwanie" />
+    <bpmn:sequenceFlow id="Flow_0pa26s6" sourceRef="Salon_Oczekiwanie" targetRef="Salon_CzyMozliwaProdukcja" />
+    <bpmn:sequenceFlow id="Flow_19mzjbd" sourceRef="Salon_mAnulowanie10" targetRef="Salon_Depozyt" />
+    <bpmn:sequenceFlow id="Flow_09b37f2" sourceRef="Salon_mAnulowanie11" targetRef="Salon_Depozyt" />
+    <bpmn:sequenceFlow id="Flow_068i9g0" sourceRef="Salon_mAnulowanie12" targetRef="Salon_Depozyt" />
+    <bpmn:sequenceFlow id="Flow_0ml8cs3" sourceRef="Salon_OczekiwanieZaplata" targetRef="Salon_WyslanieInfoDoKlienta" />
+    <bpmn:sequenceFlow id="Flow_1n4rrgo" sourceRef="Salon_mAnulowanie13" targetRef="Salon_AnulowanieZaplata" />
+    <bpmn:sequenceFlow id="Flow_1l9we7b" sourceRef="Salon_Depozyt" targetRef="Salon_Anulowanie" />
+    <bpmn:sequenceFlow id="Flow_0xy73im" sourceRef="Salon_Timer2" targetRef="Salon_Depozyt" />
     <bpmn:sequenceFlow id="Flow_0kbx0mu" sourceRef="Salon_mAnulowanie3" targetRef="Salon_Anulowanie" />
     <bpmn:sequenceFlow id="Flow_17f0vi9" sourceRef="Salon_mAnulowanie4" targetRef="Salon_Anulowanie" />
     <bpmn:sequenceFlow id="Flow_0b1oheo" sourceRef="Salon_mAnulowanie5" targetRef="Salon_Anulowanie" />
@@ -666,6 +672,69 @@
     <bpmn:sequenceFlow id="Flow_1vuc5lz" sourceRef="Salon_mAnulowanie7" targetRef="Salon_Anulowanie" />
     <bpmn:sequenceFlow id="Flow_1kdv8j0" sourceRef="Salon_mAnulowanie8" targetRef="Salon_Anulowanie" />
     <bpmn:sequenceFlow id="Flow_0ojctu1" sourceRef="Salon_mAnulowanie9" targetRef="Salon_Anulowanie" />
+    <bpmn:sequenceFlow id="Flow_09mlmuj" sourceRef="Salon_AnulowanieZaliczka" targetRef="Salon_Anulowanie" />
+    <bpmn:userTask id="Salon_OdebranieSamochodu" name="Potwierdź odbiór samochodu z fabryki" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="isCarInProduction">${false}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0smc25g</bpmn:incoming>
+      <bpmn:outgoing>Flow_13ppjxs</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Salon_Depozyt" name="Depozyt samochodu" camunda:delegateExpression="${carDeposit}">
+      <bpmn:incoming>Flow_19mzjbd</bpmn:incoming>
+      <bpmn:incoming>Flow_09b37f2</bpmn:incoming>
+      <bpmn:incoming>Flow_068i9g0</bpmn:incoming>
+      <bpmn:incoming>Flow_0xy73im</bpmn:incoming>
+      <bpmn:incoming>Flow_1fujiai</bpmn:incoming>
+      <bpmn:outgoing>Flow_1l9we7b</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Salon_mAnulowanie10" name="Anulowanie (klient)" attachedToRef="Salon_OdebranieSamochodu">
+      <bpmn:outgoing>Flow_19mzjbd</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_013foum" messageRef="Message_0per3tu" />
+    </bpmn:boundaryEvent>
+    <bpmn:intermediateThrowEvent id="Salon_AnulowanieZaliczka" name="Anulowanie powiadomienia">
+      <bpmn:incoming>Flow_051sr0h</bpmn:incoming>
+      <bpmn:outgoing>Flow_09mlmuj</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1e6b74n" messageRef="Message_11rlt5y" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>RejectAdvancePayment</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>clientProcessId</camunda:string>
+          </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>N/A</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_1fujiai" sourceRef="Salon_AnulowanieZaplata" targetRef="Salon_Depozyt" />
+    <bpmn:intermediateThrowEvent id="Salon_AnulowanieZaplata" name="Anulowanie powiadomienia">
+      <bpmn:incoming>Flow_1n4rrgo</bpmn:incoming>
+      <bpmn:outgoing>Flow_1fujiai</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0xhjnyw" messageRef="Message_1tznic0" camunda:delegateExpression="${sendMessageDelegate}">
+        <bpmn:extensionElements>
+          <camunda:field name="messageName">
+            <camunda:string>RejectPayment</camunda:string>
+          </camunda:field>
+          <camunda:field name="startProcess">
+            <camunda:string>false</camunda:string>
+          </camunda:field>
+          <camunda:field name="newOrderStatus">
+            <camunda:string>N/A</camunda:string>
+          </camunda:field>
+          <camunda:field name="correlateProcessInstanceVar">
+            <camunda:string>clientProcessId</camunda:string>
+          </camunda:field>
+        </bpmn:extensionElements>
+      </bpmn:messageEventDefinition>
+    </bpmn:intermediateThrowEvent>
   </bpmn:process>
   <bpmn:process id="CAR_DEALERSHIP_FACTORY" name="Car Dealership (Fabryka)" isExecutable="true">
     <bpmn:sendTask id="Fabryka_WyslanieInformacjiDoSalonu" name="Wysłanie informacji do salonu" camunda:delegateExpression="${sendMessageDelegate}">
@@ -677,7 +746,7 @@
           <camunda:string>false</camunda:string>
         </camunda:field>
         <camunda:field name="newOrderStatus">
-          <camunda:string>null</camunda:string>
+          <camunda:string>N/A</camunda:string>
         </camunda:field>
         <camunda:field name="correlateProcessInstanceVar">
           <camunda:string>dealershipProcessId</camunda:string>
@@ -704,12 +773,12 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:incoming>Flow_0tzotny</bpmn:incoming>
       <bpmn:outgoing>Flow_01l4adq</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:parallelGateway id="Gateway_0x9pqw4">
+    <bpmn:parallelGateway id="Fabryka_Gateway4">
       <bpmn:incoming>Flow_09aslhz</bpmn:incoming>
       <bpmn:outgoing>Flow_171ojmi</bpmn:outgoing>
       <bpmn:outgoing>Flow_1wuoupn</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:exclusiveGateway id="Gateway_0sgthmr" name="Czy samochód dostępny na stanie?">
+    <bpmn:exclusiveGateway id="Fabryka_CzySamochodNaStanie" name="Czy samochód dostępny na stanie?">
       <bpmn:incoming>Flow_01l4adq</bpmn:incoming>
       <bpmn:outgoing>Flow_09aslhz</bpmn:outgoing>
       <bpmn:outgoing>Flow_1izxqma</bpmn:outgoing>
@@ -728,20 +797,15 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:incoming>Flow_1e8y6mz</bpmn:incoming>
       <bpmn:outgoing>Flow_10htd3c</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="Event_0dv2ort">
+    <bpmn:endEvent id="Fabryka_Koniec4">
       <bpmn:incoming>Flow_1kkbw7u</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:task id="Activity_1kcn1rc" name="Depozyt samochodu">
-      <bpmn:incoming>Flow_0ufy3n7</bpmn:incoming>
-      <bpmn:incoming>Flow_08rwybv</bpmn:incoming>
-      <bpmn:outgoing>Flow_1kkbw7u</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:exclusiveGateway id="Gateway_0cnt06u" name="Czy zamówienie anulowane?">
-      <bpmn:incoming>Flow_1odex8i</bpmn:incoming>
+    <bpmn:exclusiveGateway id="Fabryka_CzyByloAnulowanie" name="Czy zamówienie anulowane?">
+      <bpmn:incoming>Fabryka_CzyWyposazenieOk</bpmn:incoming>
       <bpmn:outgoing>Flow_1e8y6mz</bpmn:outgoing>
       <bpmn:outgoing>Flow_0ufy3n7</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:exclusiveGateway id="Gateway_1vcpsh0" name="Czy produkcja bazowa ok?">
+    <bpmn:exclusiveGateway id="Fabryka_CzySamochodOk" name="Czy produkcja bazowa ok?">
       <bpmn:incoming>Flow_1xseiw0</bpmn:incoming>
       <bpmn:outgoing>Flow_16jtdzs</bpmn:outgoing>
       <bpmn:outgoing>Flow_1rvvv4e</bpmn:outgoing>
@@ -755,28 +819,28 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:incoming>Flow_0mdm8bw</bpmn:incoming>
       <bpmn:outgoing>Flow_11w470t</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="Event_0y8uv7x" name="Brak możliwości dostarczenia samochodu">
+    <bpmn:endEvent id="Fabryka_Koniec2" name="Brak możliwości dostarczenia samochodu">
       <bpmn:extensionElements>
         <camunda:executionListener delegateExpression="${factoryOrderReject}" event="start" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_03olu67</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:parallelGateway id="Gateway_1ixyxnd">
+    <bpmn:parallelGateway id="Fabryka_Gateway1">
       <bpmn:incoming>Flow_0fdgvbw</bpmn:incoming>
       <bpmn:outgoing>Flow_13959jw</bpmn:outgoing>
       <bpmn:outgoing>Flow_03olu67</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:parallelGateway id="Gateway_1edptr2">
+    <bpmn:parallelGateway id="Fabryka_Gateway2">
       <bpmn:incoming>Flow_0ikpwh0</bpmn:incoming>
       <bpmn:outgoing>Flow_0ib027s</bpmn:outgoing>
       <bpmn:outgoing>Flow_15xhp5h</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:exclusiveGateway id="Gateway_12b2859" name="Czy dostępna bazowa konfiguracja?">
+    <bpmn:exclusiveGateway id="Fabryka_CzyKonfiguracjaBazowa" name="Czy dostępna bazowa konfiguracja?">
       <bpmn:incoming>Flow_1izxqma</bpmn:incoming>
       <bpmn:outgoing>Flow_00ya6db</bpmn:outgoing>
       <bpmn:outgoing>Flow_0wc9b6p</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:parallelGateway id="Gateway_0tr6d1v">
+    <bpmn:parallelGateway id="Fabryka_Gateway3">
       <bpmn:incoming>Flow_00ya6db</bpmn:incoming>
       <bpmn:outgoing>Flow_01uw2at</bpmn:outgoing>
       <bpmn:outgoing>Flow_09xeyth</bpmn:outgoing>
@@ -789,12 +853,12 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:incoming>Flow_1rvvv4e</bpmn:incoming>
       <bpmn:outgoing>Flow_0y0oss7</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Gateway_0co6ne6" name="Czy możliwa produkcja bazowa?">
+    <bpmn:exclusiveGateway id="Fabryka_CzyMozliwaProdukcja" name="Czy możliwa produkcja bazowa?">
       <bpmn:incoming>Flow_0wc9b6p</bpmn:incoming>
       <bpmn:outgoing>Flow_0ikpwh0</bpmn:outgoing>
       <bpmn:outgoing>Flow_0fdgvbw</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="Event_1i42era">
+    <bpmn:endEvent id="Fabryka_Koniec3">
       <bpmn:incoming>Flow_1ookk67</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:userTask id="Fabryka_KontrolaJakosci" name="Wykonaj: Kontrola jakości" camunda:formKey="taskView" camunda:assignee="${assignee}" camunda:candidateGroups="${userGroup}">
@@ -818,6 +882,8 @@ productionPossible == 'true'}</camunda:inputParameter>
     <bpmn:task id="Fabryka_InfoAnulowanie" name="Zarejestrowanie informacji o anulowaniu zamówienia">
       <bpmn:extensionElements>
         <camunda:inputOutput>
+          <camunda:outputParameter name="userGroup">ROLE_FACTORY_WORKER</camunda:outputParameter>
+          <camunda:outputParameter name="assigne">system</camunda:outputParameter>
           <camunda:outputParameter name="orderCancelled">${true}</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
@@ -827,9 +893,9 @@ productionPossible == 'true'}</camunda:inputParameter>
     <bpmn:exclusiveGateway id="Gateway_06gkna9" name="Czy wyposażenie ok?">
       <bpmn:incoming>Flow_16jtdzs</bpmn:incoming>
       <bpmn:outgoing>Flow_0mdm8bw</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1odex8i</bpmn:outgoing>
+      <bpmn:outgoing>Fabryka_CzyWyposazenieOk</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="Event_0kxyq8d" name="Dostarczenie samochodu">
+    <bpmn:endEvent id="Fabryka_WiadomoscKoniec" name="Dostarczenie samochodu">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="isCarInProduction">${false}</camunda:inputParameter>
@@ -853,7 +919,7 @@ productionPossible == 'true'}</camunda:inputParameter>
         </bpmn:extensionElements>
       </bpmn:messageEventDefinition>
     </bpmn:endEvent>
-    <bpmn:endEvent id="Event_0e9joss">
+    <bpmn:endEvent id="Fabryka_Koniec1">
       <bpmn:incoming>Flow_0ou37bh</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:boundaryEvent id="Fabryka_mAnulowanie5" name="Anulowanie" attachedToRef="Fabryka_TransportSamochoduDoSalonu">
@@ -876,62 +942,67 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmn:outgoing>Flow_0ou37bh</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_05obr1o" messageRef="Message_18q60mk" />
     </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_10htd3c" sourceRef="Fabryka_TransportSamochoduDoSalonu" targetRef="Event_0kxyq8d" />
-    <bpmn:sequenceFlow id="Flow_13959jw" sourceRef="Gateway_1ixyxnd" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_10htd3c" sourceRef="Fabryka_TransportSamochoduDoSalonu" targetRef="Fabryka_WiadomoscKoniec" />
+    <bpmn:sequenceFlow id="Flow_13959jw" sourceRef="Fabryka_Gateway1" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
     <bpmn:sequenceFlow id="Flow_0tzotny" sourceRef="Fabryka_Start" targetRef="Fabryka_PrzyjecieZamowienia" />
-    <bpmn:sequenceFlow id="Flow_1xseiw0" sourceRef="Fabryka_KontrolaJakosci" targetRef="Gateway_1vcpsh0" />
-    <bpmn:sequenceFlow id="Flow_01l4adq" sourceRef="Fabryka_PrzyjecieZamowienia" targetRef="Gateway_0sgthmr" />
-    <bpmn:sequenceFlow id="Flow_09aslhz" name="Tak" sourceRef="Gateway_0sgthmr" targetRef="Gateway_0x9pqw4">
+    <bpmn:sequenceFlow id="Flow_1xseiw0" sourceRef="Fabryka_KontrolaJakosci" targetRef="Fabryka_CzySamochodOk" />
+    <bpmn:sequenceFlow id="Flow_01l4adq" sourceRef="Fabryka_PrzyjecieZamowienia" targetRef="Fabryka_CzySamochodNaStanie" />
+    <bpmn:sequenceFlow id="Flow_09aslhz" name="Tak" sourceRef="Fabryka_CzySamochodNaStanie" targetRef="Fabryka_Gateway4">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{carAvailableInFactory}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_171ojmi" sourceRef="Gateway_0x9pqw4" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
-    <bpmn:sequenceFlow id="Flow_1wuoupn" sourceRef="Gateway_0x9pqw4" targetRef="Fabryka_KontrolaJakosci" />
-    <bpmn:sequenceFlow id="Flow_1izxqma" name="Nie" sourceRef="Gateway_0sgthmr" targetRef="Gateway_12b2859">
+    <bpmn:sequenceFlow id="Flow_171ojmi" sourceRef="Fabryka_Gateway4" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_1wuoupn" sourceRef="Fabryka_Gateway4" targetRef="Fabryka_KontrolaJakosci" />
+    <bpmn:sequenceFlow id="Flow_1izxqma" name="Nie" sourceRef="Fabryka_CzySamochodNaStanie" targetRef="Fabryka_CzyKonfiguracjaBazowa">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not carAvailableInFactory}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_01uw2at" sourceRef="Gateway_0tr6d1v" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
-    <bpmn:sequenceFlow id="Flow_09xeyth" sourceRef="Gateway_0tr6d1v" targetRef="Fabryka_ProdukcjaWyposazenia" />
+    <bpmn:sequenceFlow id="Flow_01uw2at" sourceRef="Fabryka_Gateway3" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_09xeyth" sourceRef="Fabryka_Gateway3" targetRef="Fabryka_ProdukcjaWyposazenia" />
     <bpmn:sequenceFlow id="Flow_11w470t" sourceRef="Fabryka_ProdukcjaWyposazenia" targetRef="Fabryka_KontrolaJakosci" />
-    <bpmn:sequenceFlow id="Flow_0ib027s" sourceRef="Gateway_1edptr2" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
+    <bpmn:sequenceFlow id="Flow_0ib027s" sourceRef="Fabryka_Gateway2" targetRef="Fabryka_WyslanieInformacjiDoSalonu" />
     <bpmn:sequenceFlow id="Flow_0y0oss7" sourceRef="Fabryka_ProdukcjaBazowa" targetRef="Fabryka_ProdukcjaWyposazenia" />
-    <bpmn:sequenceFlow id="Flow_0ou37bh" sourceRef="Fabryka_mAnulowanie1" targetRef="Event_0e9joss" />
-    <bpmn:sequenceFlow id="Flow_1e8y6mz" name="Nie" sourceRef="Gateway_0cnt06u" targetRef="Fabryka_TransportSamochoduDoSalonu">
+    <bpmn:sequenceFlow id="Flow_0ou37bh" sourceRef="Fabryka_mAnulowanie1" targetRef="Fabryka_Koniec1" />
+    <bpmn:sequenceFlow id="Flow_1e8y6mz" name="Nie" sourceRef="Fabryka_CzyByloAnulowanie" targetRef="Fabryka_TransportSamochoduDoSalonu">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not orderCancelled}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0ufy3n7" name="Tak" sourceRef="Gateway_0cnt06u" targetRef="Activity_1kcn1rc">
+    <bpmn:sequenceFlow id="Flow_0ufy3n7" name="Tak" sourceRef="Fabryka_CzyByloAnulowanie" targetRef="Fabryka_Depozyt">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{orderCancelled}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1kkbw7u" sourceRef="Activity_1kcn1rc" targetRef="Event_0dv2ort" />
-    <bpmn:sequenceFlow id="Flow_08rwybv" sourceRef="Fabryka_mAnulowanie5" targetRef="Activity_1kcn1rc" />
-    <bpmn:sequenceFlow id="Flow_16jtdzs" name="Tak" sourceRef="Gateway_1vcpsh0" targetRef="Gateway_06gkna9">
+    <bpmn:sequenceFlow id="Flow_1kkbw7u" sourceRef="Fabryka_Depozyt" targetRef="Fabryka_Koniec4" />
+    <bpmn:sequenceFlow id="Flow_08rwybv" sourceRef="Fabryka_mAnulowanie5" targetRef="Fabryka_Depozyt" />
+    <bpmn:sequenceFlow id="Flow_16jtdzs" name="Tak" sourceRef="Fabryka_CzySamochodOk" targetRef="Gateway_06gkna9">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isCorrectBaseProduction}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1rvvv4e" name="Nie" sourceRef="Gateway_1vcpsh0" targetRef="Fabryka_ProdukcjaBazowa">
+    <bpmn:sequenceFlow id="Flow_1rvvv4e" name="Nie" sourceRef="Fabryka_CzySamochodOk" targetRef="Fabryka_ProdukcjaBazowa">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not isCorrectBaseProduction}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0mdm8bw" name="Nie" sourceRef="Gateway_06gkna9" targetRef="Fabryka_ProdukcjaWyposazenia">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not isCorrectEquipment}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1odex8i" name="Tak" sourceRef="Gateway_06gkna9" targetRef="Gateway_0cnt06u">
+    <bpmn:sequenceFlow id="Fabryka_CzyWyposazenieOk" name="Tak" sourceRef="Gateway_06gkna9" targetRef="Fabryka_CzyByloAnulowanie">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{isCorrectEquipment}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0gt12jf" sourceRef="Fabryka_mAnulowanie4" targetRef="Fabryka_InfoAnulowanie" />
     <bpmn:sequenceFlow id="Flow_1w3ahkx" sourceRef="Fabryka_mAnulowanie3" targetRef="Fabryka_InfoAnulowanie" />
-    <bpmn:sequenceFlow id="Flow_03olu67" sourceRef="Gateway_1ixyxnd" targetRef="Event_0y8uv7x" />
-    <bpmn:sequenceFlow id="Flow_0fdgvbw" name="Nie" sourceRef="Gateway_0co6ne6" targetRef="Gateway_1ixyxnd">
+    <bpmn:sequenceFlow id="Flow_03olu67" sourceRef="Fabryka_Gateway1" targetRef="Fabryka_Koniec2" />
+    <bpmn:sequenceFlow id="Flow_0fdgvbw" name="Nie" sourceRef="Fabryka_CzyMozliwaProdukcja" targetRef="Fabryka_Gateway1">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${not productionPossible}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0ikpwh0" name="Tak" sourceRef="Gateway_0co6ne6" targetRef="Gateway_1edptr2">
+    <bpmn:sequenceFlow id="Flow_0ikpwh0" name="Tak" sourceRef="Fabryka_CzyMozliwaProdukcja" targetRef="Fabryka_Gateway2">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${productionPossible}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_15xhp5h" sourceRef="Gateway_1edptr2" targetRef="Fabryka_ProdukcjaBazowa" />
-    <bpmn:sequenceFlow id="Flow_0wc9b6p" name="Nie" sourceRef="Gateway_12b2859" targetRef="Gateway_0co6ne6">
+    <bpmn:sequenceFlow id="Flow_15xhp5h" sourceRef="Fabryka_Gateway2" targetRef="Fabryka_ProdukcjaBazowa" />
+    <bpmn:sequenceFlow id="Flow_0wc9b6p" name="Nie" sourceRef="Fabryka_CzyKonfiguracjaBazowa" targetRef="Fabryka_CzyMozliwaProdukcja">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not baseConstructionAvailable}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_00ya6db" name="Tak" sourceRef="Gateway_12b2859" targetRef="Gateway_0tr6d1v">
+    <bpmn:sequenceFlow id="Flow_00ya6db" name="Tak" sourceRef="Fabryka_CzyKonfiguracjaBazowa" targetRef="Fabryka_Gateway3">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{baseConstructionAvailable}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1ookk67" sourceRef="Fabryka_mAnulowanie2" targetRef="Event_1i42era" />
+    <bpmn:sequenceFlow id="Flow_1ookk67" sourceRef="Fabryka_mAnulowanie2" targetRef="Fabryka_Koniec3" />
+    <bpmn:serviceTask id="Fabryka_Depozyt" name="Depozyt samochodu" camunda:delegateExpression="${carDeposit}">
+      <bpmn:incoming>Flow_0ufy3n7</bpmn:incoming>
+      <bpmn:incoming>Flow_08rwybv</bpmn:incoming>
+      <bpmn:outgoing>Flow_1kkbw7u</bpmn:outgoing>
+    </bpmn:serviceTask>
   </bpmn:process>
   <bpmn:message id="AskFactory" name="AskFactoryMessage" />
   <bpmn:message id="AskDealership" name="AskDealershipMessage" />
@@ -945,6 +1016,8 @@ productionPossible == 'true'}</camunda:inputParameter>
   <bpmn:message id="Message_0per3tu" name="CancellationMessage" />
   <bpmn:message id="Message_0mr9656" name="PaymentNotificationMessage" />
   <bpmn:message id="Message_0fuk0bu" name="PaymentConfirmationMessage" />
+  <bpmn:message id="Message_11rlt5y" name="RejectAdvancePayment" />
+  <bpmn:message id="Message_1tznic0" name="RejectPayment" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_16ikafs">
       <bpmndi:BPMNShape id="Participant_1stwjmk_di" bpmnElement="Participant_1stwjmk" isHorizontal="true">
@@ -1007,6 +1080,16 @@ productionPossible == 'true'}</camunda:inputParameter>
         <di:waypoint x="2090" y="350" />
         <di:waypoint x="2300" y="350" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n6fiwb_di" bpmnElement="Flow_0n6fiwb">
+        <di:waypoint x="2040" y="112" />
+        <di:waypoint x="2040" y="92" />
+        <di:waypoint x="2212" y="92" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xvgbbk_di" bpmnElement="Flow_0xvgbbk">
+        <di:waypoint x="1880" y="578" />
+        <di:waypoint x="1880" y="590" />
+        <di:waypoint x="2122" y="590" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0qi65ke_di" bpmnElement="Klient_Zaliczka_Koniec">
         <dc:Bounds x="2212" y="182" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -1016,7 +1099,7 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_1qff49g_di" bpmnElement="Klient_ZaplacZaliczke">
         <dc:Bounds x="2040" y="130" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_19bt3du_di" bpmnElement="Event_19bt3du">
+      <bpmndi:BPMNShape id="Event_19bt3du_di" bpmnElement="Klient_Zakonczenie1">
         <dc:Bounds x="2212" y="74" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1aym1iv_di" bpmnElement="Klient_OczekiwanieNaZamowienie">
@@ -1031,10 +1114,10 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="2510" y="337" width="59" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_13ynu74_di" bpmnElement="Event_13ynu74">
+      <bpmndi:BPMNShape id="Event_13ynu74_di" bpmnElement="Klient_Start">
         <dc:Bounds x="532" y="332" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="518" y="375" width="64" height="27" />
+          <dc:Bounds x="519" y="375" width="63" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0aqo134_di" bpmnElement="Klient_WyslanieZamowienia">
@@ -1043,7 +1126,7 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_0jsni87_di" bpmnElement="Klient_ZlozenieZamowienia">
         <dc:Bounds x="1510" y="310" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1tnx5yo_di" bpmnElement="Activity_0miius7">
+      <bpmndi:BPMNShape id="Activity_1tnx5yo_di" bpmnElement="Klient_ZaplacZamowienie">
         <dc:Bounds x="1880" y="480" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_15t0t8f_di" bpmnElement="Klient_Konfiguracja" isExpanded="true">
@@ -1073,10 +1156,10 @@ productionPossible == 'true'}</camunda:inputParameter>
         <di:waypoint x="800" y="350" />
         <di:waypoint x="840" y="350" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Event_1yyhf9t_di" bpmnElement="Event_1yyhf9t">
+      <bpmndi:BPMNShape id="Event_1yyhf9t_di" bpmnElement="Klient_Konfiguracja_Start">
         <dc:Bounds x="632" y="332" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1ejmm5y_di" bpmnElement="Event_1ejmm5y">
+      <bpmndi:BPMNShape id="Event_1ejmm5y_di" bpmnElement="Klient_Konfiguracja_Koniec">
         <dc:Bounds x="1382" y="332" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_081hz3s_di" bpmnElement="Klient_Konfiguracja_Model">
@@ -1094,19 +1177,22 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_1uupih8_di" bpmnElement="Klient_Konfiguracja_WyposazenieDodatkowe">
         <dc:Bounds x="1250" y="310" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_11rnrbe_di" bpmnElement="Event_1n21kfa">
+      <bpmndi:BPMNShape id="Event_11rnrbe_di" bpmnElement="Klient_Zaplata_Koniec">
         <dc:Bounds x="2122" y="492" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2107" y="535" width="70" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_14o6l24_di" bpmnElement="Event_14o6l24">
+      <bpmndi:BPMNShape id="Event_14o6l24_di" bpmnElement="Klient_Zakonczenie2">
         <dc:Bounds x="2122" y="572" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2133" y="615" width="15" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_17c6pyp_di" bpmnElement="Event_1mi6riw">
+      <bpmndi:BPMNShape id="Event_17c6pyp_di" bpmnElement="Klient_Timer2">
         <dc:Bounds x="1962" y="542" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1991" y="573" width="58" height="14" />
+          <dc:Bounds x="1992" y="573" width="57" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0zto2mu_di" bpmnElement="Klient_Timer1">
@@ -1121,16 +1207,28 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="2109" y="390" width="59" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1er8q8d_di" bpmnElement="Event_0g4itnq">
+      <bpmndi:BPMNShape id="Event_1er8q8d_di" bpmnElement="Klient_Powiadomienie_Zaplata">
         <dc:Bounds x="1972" y="372" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1907" y="405.5" width="85" height="27" />
+          <dc:Bounds x="1908" y="406" width="84" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_16awr5k_di" bpmnElement="Event_1lgoas7">
+      <bpmndi:BPMNShape id="Event_16awr5k_di" bpmnElement="Klient_Powiadomienie_Zaliczka">
         <dc:Bounds x="2072" y="292" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2096.5" y="276" width="85" height="27" />
+          <dc:Bounds x="2098" y="276" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0dnu6ht_di" bpmnElement="Klient_AnulowanieZaplaty">
+        <dc:Bounds x="1862" y="542" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1793" y="556" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_15ayo2o_di" bpmnElement="Klient_AnulowanieZaliczki">
+        <dc:Bounds x="2022" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1953" y="126" width="74" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Participant_019rtvj_di" bpmnElement="Participant_019rtvj" isHorizontal="true">
@@ -1159,36 +1257,32 @@ productionPossible == 'true'}</camunda:inputParameter>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0b1oheo_di" bpmnElement="Flow_0b1oheo">
         <di:waypoint x="1800" y="1038" />
-        <di:waypoint x="1800" y="1100" />
-        <di:waypoint x="925" y="1100" />
+        <di:waypoint x="1800" y="1090" />
+        <di:waypoint x="925" y="1090" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_17f0vi9_di" bpmnElement="Flow_17f0vi9">
         <di:waypoint x="1630" y="1038" />
-        <di:waypoint x="1630" y="1100" />
-        <di:waypoint x="925" y="1100" />
+        <di:waypoint x="1630" y="1090" />
+        <di:waypoint x="925" y="1090" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0kbx0mu_di" bpmnElement="Flow_0kbx0mu">
         <di:waypoint x="1460" y="1038" />
-        <di:waypoint x="1460" y="1100" />
-        <di:waypoint x="925" y="1100" />
+        <di:waypoint x="1460" y="1090" />
+        <di:waypoint x="925" y="1090" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0xy73im_di" bpmnElement="Flow_0xy73im">
         <di:waypoint x="2500" y="806" />
         <di:waypoint x="2500" y="930" />
         <di:waypoint x="2330" y="930" />
-        <di:waypoint x="2330" y="1070" />
+        <di:waypoint x="2330" y="1060" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1l9we7b_di" bpmnElement="Flow_1l9we7b">
-        <di:waypoint x="2310" y="1150" />
-        <di:waypoint x="2310" y="1540" />
-        <di:waypoint x="870" y="1540" />
-        <di:waypoint x="870" y="1410" />
+        <di:waypoint x="2260" y="1090" />
+        <di:waypoint x="925" y="1090" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1n4rrgo_di" bpmnElement="Flow_1n4rrgo">
         <di:waypoint x="2600" y="806" />
-        <di:waypoint x="2600" y="940" />
-        <di:waypoint x="2340" y="940" />
-        <di:waypoint x="2340" y="1070" />
+        <di:waypoint x="2600" y="922" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0ml8cs3_di" bpmnElement="Flow_0ml8cs3">
         <di:waypoint x="2600" y="748" />
@@ -1197,16 +1291,17 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNEdge id="Flow_068i9g0_di" bpmnElement="Flow_068i9g0">
         <di:waypoint x="2298" y="788" />
         <di:waypoint x="2310" y="788" />
-        <di:waypoint x="2310" y="1070" />
+        <di:waypoint x="2310" y="1060" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_09b37f2_di" bpmnElement="Flow_09b37f2">
         <di:waypoint x="2078" y="940" />
         <di:waypoint x="2300" y="940" />
-        <di:waypoint x="2300" y="1070" />
+        <di:waypoint x="2300" y="1060" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19mzjbd_di" bpmnElement="Flow_19mzjbd">
-        <di:waypoint x="2078" y="1110" />
-        <di:waypoint x="2260" y="1110" />
+        <di:waypoint x="2078" y="1210" />
+        <di:waypoint x="2310" y="1210" />
+        <di:waypoint x="2310" y="1140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0pa26s6_di" bpmnElement="Flow_0pa26s6">
         <di:waypoint x="1630" y="1310" />
@@ -1221,12 +1316,12 @@ productionPossible == 'true'}</camunda:inputParameter>
         <di:waypoint x="2500" y="748" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13ppjxs_di" bpmnElement="Flow_13ppjxs">
-        <di:waypoint x="2010" y="1110" />
+        <di:waypoint x="2010" y="1130" />
         <di:waypoint x="2010" y="1020" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0smc25g_di" bpmnElement="Flow_0smc25g">
         <di:waypoint x="2010" y="1270" />
-        <di:waypoint x="2010" y="1190" />
+        <di:waypoint x="2010" y="1210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0xzmmgl_di" bpmnElement="Flow_0xzmmgl">
         <di:waypoint x="2010" y="940" />
@@ -1322,13 +1417,12 @@ productionPossible == 'true'}</camunda:inputParameter>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16zxbp5_di" bpmnElement="Flow_16zxbp5">
         <di:waypoint x="1120" y="1035" />
-        <di:waypoint x="1120" y="1100" />
-        <di:waypoint x="925" y="1100" />
+        <di:waypoint x="1120" y="1090" />
+        <di:waypoint x="925" y="1090" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_051sr0h_di" bpmnElement="Flow_051sr0h">
-        <di:waypoint x="1220" y="1035" />
-        <di:waypoint x="1220" y="1100" />
-        <di:waypoint x="925" y="1100" />
+        <di:waypoint x="1230" y="1038" />
+        <di:waypoint x="1230" y="1142" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0lqo2p5_di" bpmnElement="Flow_0lqo2p5">
         <di:waypoint x="970" y="806" />
@@ -1336,16 +1430,25 @@ productionPossible == 'true'}</camunda:inputParameter>
         <di:waypoint x="850" y="860" />
         <di:waypoint x="850" y="970" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09mlmuj_di" bpmnElement="Flow_09mlmuj">
+        <di:waypoint x="1212" y="1160" />
+        <di:waypoint x="925" y="1160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1fujiai_di" bpmnElement="Flow_1fujiai">
+        <di:waypoint x="2582" y="940" />
+        <di:waypoint x="2340" y="940" />
+        <di:waypoint x="2340" y="1060" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1bqkw9p_di" bpmnElement="Salon_PowiadomienieZaliczka">
         <dc:Bounds x="1162" y="832" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1065" y="840" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0gnxckk_di" bpmnElement="Salon_OdebranieZaliczki">
+      <bpmndi:BPMNShape id="Activity_0gnxckk_di" bpmnElement="Salon_OczekiwanieZaliczka">
         <dc:Bounds x="1130" y="940" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0osccbx_di" bpmnElement="Gateway_0osccbx" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0osccbx_di" bpmnElement="Salon_CzySamochodWInnymSalonie" isMarkerVisible="true">
         <dc:Bounds x="1315" y="955" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1295" y="910" width="89" height="40" />
@@ -1363,19 +1466,16 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_0m7of8p_di" bpmnElement="Salon_KontrolaJakosci">
         <dc:Bounds x="1960" y="940" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1sjzlva_di" bpmnElement="Salon_OdebranieSamochodu">
-        <dc:Bounds x="1960" y="1110" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_040mdww_di" bpmnElement="Gateway_040mdww" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_040mdww_di" bpmnElement="Salon_CzyMozliwaProdukcja" isMarkerVisible="true">
         <dc:Bounds x="1755" y="1285" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1748.5" y="1242" width="63" height="40" />
+          <dc:Bounds x="1750" y="1242" width="62" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_16mworn_di" bpmnElement="Salon_OdrzucenieZamwoienia">
         <dc:Bounds x="1730" y="1390" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1eoly0v_di" bpmnElement="Activity_1eoly0v">
+      <bpmndi:BPMNShape id="Activity_1eoly0v_di" bpmnElement="Salon_WyslanieDoFabryki">
         <dc:Bounds x="1290" y="1270" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1nsek75_di" bpmnElement="Salon_Start">
@@ -1414,17 +1514,32 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_1596jsu_di" bpmnElement="Salon_PrzygotowanieDoTransportu">
         <dc:Bounds x="1630" y="940" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1iqkinb_di" bpmnElement="Activity_1kuy6zb">
+      <bpmndi:BPMNShape id="Activity_1iqkinb_di" bpmnElement="Salon_Oczekiwanie">
         <dc:Bounds x="1530" y="1270" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1k3dc66_di" bpmnElement="Activity_0siyi1l">
+      <bpmndi:BPMNShape id="Activity_1k3dc66_di" bpmnElement="Salon_OczekiwanieZaplata">
         <dc:Bounds x="2500" y="708" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_08vhtim_di" bpmnElement="Activity_08vhtim">
-        <dc:Bounds x="2260" y="1070" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_04b9a63_di" bpmnElement="Salon_ZlozenieZamowienia">
         <dc:Bounds x="1290" y="1130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1sjzlva_di" bpmnElement="Salon_OdebranieSamochodu">
+        <dc:Bounds x="1960" y="1130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0cnnka9_di" bpmnElement="Salon_Depozyt">
+        <dc:Bounds x="2260" y="1060" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1yik9bi_di" bpmnElement="Salon_AnulowanieZaliczka">
+        <dc:Bounds x="1212" y="1142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1133" y="1126" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1tm6va4_di" bpmnElement="Salon_AnulowanieZaplata">
+        <dc:Bounds x="2582" y="922" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2564" y="965" width="74" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1f7cwv7_di" bpmnElement="Salon_Anulowanie" isExpanded="true">
         <dc:Bounds x="215" y="970" width="710" height="440" />
@@ -1498,19 +1613,19 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Gateway_0du8pfa_di" bpmnElement="Anulowanie_Gateway1">
         <dc:Bounds x="350" y="1055" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_005nh01_di" bpmnElement="Anulowanie_Gateway2" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_005nh01_di" bpmnElement="Anulowanie_CzySamochodWProdukcji" isMarkerVisible="true">
         <dc:Bounds x="460" y="1055" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="442" y="1018" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0busm3s_di" bpmnElement="Anulowanie_Gateway3" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0busm3s_di" bpmnElement="Anulowanie_NaCzyjWniosek" isMarkerVisible="true">
         <dc:Bounds x="460" y="1235" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="383" y="1283" width="86" height="14" />
+          <dc:Bounds x="384" y="1283" width="85" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_15c1yi6_di" bpmnElement="Anulowanie_Gateway4" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_15c1yi6_di" bpmnElement="Anulowanie_CzyWplaconoZaliczke" isMarkerVisible="true">
         <dc:Bounds x="590" y="1235" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="581" y="1292" width="69" height="27" />
@@ -1531,7 +1646,7 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="832" y="1285" width="87" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_07z3rbd_di" bpmnElement="Event_07z3rbd">
+      <bpmndi:BPMNShape id="Event_07z3rbd_di" bpmnElement="Anulowanie_Koniec1">
         <dc:Bounds x="577" y="1142" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_14o8myd_di" bpmnElement="Anulowanie_Koniec">
@@ -1603,12 +1718,6 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="2032" y="892" width="57" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0kux4rq_di" bpmnElement="Salon_mAnulowanie10">
-        <dc:Bounds x="2042" y="1092" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="2032" y="1062" width="57" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_00ik4dl_di" bpmnElement="Salon_Timer1">
         <dc:Bounds x="1112" y="1002" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -1625,6 +1734,12 @@ productionPossible == 'true'}</camunda:inputParameter>
         <dc:Bounds x="952" y="770" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="982" y="806" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0kux4rq_di" bpmnElement="Salon_mAnulowanie10">
+        <dc:Bounds x="2042" y="1192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2081" y="1216" width="57" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Participant_1p8kbk3_di" bpmnElement="Participant_1p8kbk3" isHorizontal="true">
@@ -1682,20 +1797,20 @@ productionPossible == 'true'}</camunda:inputParameter>
         <di:waypoint x="1970" y="2100" />
         <di:waypoint x="1920" y="2100" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1odex8i_di" bpmnElement="Flow_1odex8i">
+      <bpmndi:BPMNEdge id="Flow_1odex8i_di" bpmnElement="Fabryka_CzyWyposazenieOk">
         <di:waypoint x="2325" y="1969" />
         <di:waypoint x="2455" y="1969" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2381" y="1951" width="19" height="14" />
+          <dc:Bounds x="2382" y="1951" width="17" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0mdm8bw_di" bpmnElement="Flow_0mdm8bw">
         <di:waypoint x="2300" y="1994" />
-        <di:waypoint x="2300" y="2320" />
-        <di:waypoint x="1890" y="2320" />
+        <di:waypoint x="2300" y="2300" />
+        <di:waypoint x="1890" y="2300" />
         <di:waypoint x="1890" y="2270" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2307" y="2053" width="17" height="14" />
+          <dc:Bounds x="2307" y="2049" width="17" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1rvvv4e_di" bpmnElement="Flow_1rvvv4e">
@@ -1816,13 +1931,13 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_0626op3_di" bpmnElement="Fabryka_PrzyjecieZamowienia">
         <dc:Bounds x="1400" y="1770" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0as7k99_di" bpmnElement="Gateway_0x9pqw4">
+      <bpmndi:BPMNShape id="Gateway_0as7k99_di" bpmnElement="Fabryka_Gateway4">
         <dc:Bounds x="1665" y="1944" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0sgthmr_di" bpmnElement="Gateway_0sgthmr" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0sgthmr_di" bpmnElement="Fabryka_CzySamochodNaStanie" isMarkerVisible="true">
         <dc:Bounds x="1425" y="1944" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1341" y="1949" width="74" height="40" />
+          <dc:Bounds x="1342" y="1949" width="73" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1uf6sdl_di" bpmnElement="Fabryka_Start">
@@ -1834,19 +1949,16 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_17i9bsd_di" bpmnElement="Fabryka_TransportSamochoduDoSalonu">
         <dc:Bounds x="2470" y="1770" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0dv2ort_di" bpmnElement="Event_0dv2ort">
+      <bpmndi:BPMNShape id="Event_0dv2ort_di" bpmnElement="Fabryka_Koniec4">
         <dc:Bounds x="2742" y="1951" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1kcn1rc_di" bpmnElement="Activity_1kcn1rc">
-        <dc:Bounds x="2600" y="1929" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0cnt06u_di" bpmnElement="Gateway_0cnt06u" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0cnt06u_di" bpmnElement="Fabryka_CzyByloAnulowanie" isMarkerVisible="true">
         <dc:Bounds x="2455" y="1944" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2441" y="2001" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1vcpsh0_di" bpmnElement="Gateway_1vcpsh0" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_1vcpsh0_di" bpmnElement="Fabryka_CzySamochodOk" isMarkerVisible="true">
         <dc:Bounds x="2165" y="1944" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2155" y="1914" width="70" height="27" />
@@ -1855,37 +1967,37 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Activity_0f31jc6_di" bpmnElement="Fabryka_ProdukcjaWyposazenia">
         <dc:Bounds x="1870" y="2190" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0y8uv7x_di" bpmnElement="Event_0y8uv7x">
+      <bpmndi:BPMNShape id="Event_0y8uv7x_di" bpmnElement="Fabryka_Koniec2">
         <dc:Bounds x="1602" y="2502" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1580" y="2540" width="79" height="40" />
+          <dc:Bounds x="1580" y="2540" width="80" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0go4b29_di" bpmnElement="Gateway_1ixyxnd">
+      <bpmndi:BPMNShape id="Gateway_0go4b29_di" bpmnElement="Fabryka_Gateway1">
         <dc:Bounds x="1505" y="2495" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_16i18mn_di" bpmnElement="Gateway_1edptr2">
+      <bpmndi:BPMNShape id="Gateway_16i18mn_di" bpmnElement="Fabryka_Gateway2">
         <dc:Bounds x="1565" y="2415" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_12b2859_di" bpmnElement="Gateway_12b2859" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_12b2859_di" bpmnElement="Fabryka_CzyKonfiguracjaBazowa" isMarkerVisible="true">
         <dc:Bounds x="1425" y="2205" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1336" y="2220" width="68" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_14q9ixm_di" bpmnElement="Gateway_0tr6d1v">
+      <bpmndi:BPMNShape id="Gateway_14q9ixm_di" bpmnElement="Fabryka_Gateway3">
         <dc:Bounds x="1615" y="2205" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_03d3xa6_di" bpmnElement="Fabryka_ProdukcjaBazowa">
         <dc:Bounds x="1670" y="2400" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0co6ne6_di" bpmnElement="Gateway_0co6ne6" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0co6ne6_di" bpmnElement="Fabryka_CzyMozliwaProdukcja" isMarkerVisible="true">
         <dc:Bounds x="1425" y="2415" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1346" y="2420" width="63" height="40" />
+          <dc:Bounds x="1347" y="2420" width="62" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1i42era_di" bpmnElement="Event_1i42era">
+      <bpmndi:BPMNShape id="Event_1i42era_di" bpmnElement="Fabryka_Koniec3">
         <dc:Bounds x="1762" y="2502" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0kupd2o_di" bpmnElement="Fabryka_KontrolaJakosci">
@@ -1900,14 +2012,17 @@ productionPossible == 'true'}</camunda:inputParameter>
           <dc:Bounds x="2257" y="1914" width="86" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0kxyq8d_di" bpmnElement="Event_0kxyq8d">
+      <bpmndi:BPMNShape id="Event_0kxyq8d_di" bpmnElement="Fabryka_WiadomoscKoniec">
         <dc:Bounds x="2672" y="1792" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2657" y="1838" width="65" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0e9joss_di" bpmnElement="Event_0e9joss">
+      <bpmndi:BPMNShape id="Event_0e9joss_di" bpmnElement="Fabryka_Koniec1">
         <dc:Bounds x="1562" y="1712" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1y5r02w_di" bpmnElement="Fabryka_Depozyt">
+        <dc:Bounds x="2600" y="1929" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_11p39x7_di" bpmnElement="Fabryka_mAnulowanie1">
         <dc:Bounds x="1482" y="1752" width="36" height="36" />

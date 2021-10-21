@@ -8,8 +8,12 @@ import org.springframework.stereotype.Component;
 @Component("baseProductionService")
 public class BaseProductionService extends BaseJavaDelegate {
 
+    private boolean isOrderCancelled = false;
+
     @Override
     public OrderStatusEnum getNewOrderStatus() {
+        if (isOrderCancelled)
+            return null;
         return OrderStatusEnum.InProductionProgress;
     }
 
@@ -21,6 +25,8 @@ public class BaseProductionService extends BaseJavaDelegate {
      */
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
+        Boolean tmp = isOrderCancelled(delegateExecution);
+        isOrderCancelled = tmp != null && tmp;
         super.execute(delegateExecution);
     }
 }

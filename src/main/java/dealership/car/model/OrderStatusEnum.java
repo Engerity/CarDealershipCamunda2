@@ -17,6 +17,8 @@ public enum OrderStatusEnum {
 
     WaitingForAdvancePayment(ClientOrderStatusEnum.WaitingForAdvancePayment),
 
+    WaitingForPayment(ClientOrderStatusEnum.WaitingForPayment),
+
     InProgress(ClientOrderStatusEnum.InProgress),
 
     SentToFactory("Wysłane do fabryki"),
@@ -125,49 +127,5 @@ public enum OrderStatusEnum {
         List<OrderStatusEnum> result = new ArrayList<>(Arrays.asList(values()));
         result.removeAll(notActiveStatuses());
         return result;
-    }
-
-    /**
-     * Zwraca nieaktywne statusy zamówień jako tekst (statusy oddzelone przecinkami)
-     * @return nieaktywne statusy zamówień
-     */
-    public static String notActiveStatusesAsString() {
-        List<String> list = new ArrayList<>();
-        for (OrderStatusEnum s : notActiveStatuses()) {
-            if (s != null)
-                list.add(s.name());
-        }
-        return String.join(",", list);
-    }
-
-    /**
-     * Zwraca aktywne statusy zamówień jako tekst (statusy oddzelone przecinkami)
-     * @return laktywne statusy zamówień
-     */
-    public static String activeStatusesAsString() {
-        List<String> list = new ArrayList<>();
-        for (OrderStatusEnum s : activeStatuses()) {
-            if (s != null)
-                list.add(s.name());
-        }
-        return String.join(",", list);
-    }
-
-    /**
-     * Zamienia listę String na listę OrderStatusEnum
-     * @param orderStatus lista String
-     * @return lista OrderStatusEnum
-     */
-    public static List<OrderStatusEnum> getOrderStatusEnumList(List<String> orderStatus) {
-        List<OrderStatusEnum> orderStatusEnum = null;
-        if (orderStatus != null && !orderStatus.isEmpty()) {
-            orderStatusEnum = new ArrayList<>();
-            for (String val : orderStatus) {
-                OrderStatusEnum tmp = OrderStatusEnum.valueOfString(val);
-                if (tmp != null)
-                    orderStatusEnum.add(tmp);
-            }
-        }
-        return orderStatusEnum;
     }
 }

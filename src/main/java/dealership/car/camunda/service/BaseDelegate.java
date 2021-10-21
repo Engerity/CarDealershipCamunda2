@@ -1,5 +1,6 @@
 package dealership.car.camunda.service;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import dealership.car.model.Order;
 import dealership.car.model.OrderModel;
 import dealership.car.model.OrderStatusEnum;
@@ -26,6 +27,16 @@ public abstract class BaseDelegate {
 
     @Autowired
     protected CamundaProcessService camundaProcessService;
+
+    public static Boolean isOrderCancelled(VariableScope delegate) {
+        Object oCancelled = delegate.getVariable("orderCancelled");
+        if (oCancelled instanceof Boolean)
+            return (Boolean) oCancelled;
+        else if (oCancelled instanceof String)
+            return Boolean.parseBoolean((String) oCancelled);
+
+        return null;
+    }
 
     /**
      * Abstrakcyjna metoda zwracajaca nowy status zamówienia

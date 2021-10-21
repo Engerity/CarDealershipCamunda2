@@ -7,13 +7,20 @@ import org.springframework.stereotype.Component;
 
 @Component("factoryControlQuality")
 public class FactoryControlQualityTaskListener extends BaseTaskListener {
+
+    private boolean isOrderCancelled = false;
+
     @Override
     public OrderStatusEnum getNewOrderStatus() {
+        if (isOrderCancelled)
+            return null;
         return OrderStatusEnum.FactoryControlQuality;
     }
 
     @Override
     public void notify(DelegateTask delegateTask) {
+        Boolean tmp = isOrderCancelled(delegateTask);
+        isOrderCancelled = tmp != null && tmp;
         super.notify(delegateTask);
     }
 }

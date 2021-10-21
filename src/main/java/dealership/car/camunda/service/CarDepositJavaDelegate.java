@@ -1,15 +1,17 @@
-package dealership.car.camunda.service.dealership;
+package dealership.car.camunda.service;
 
-import dealership.car.camunda.service.BaseJavaDelegate;
 import dealership.car.model.OrderStatusEnum;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
 
-@Component("advancePaymentReceivedService")
-public class AdvancePaymentReceivedService extends BaseJavaDelegate {
+/**
+ * Depozyt samochodu
+ */
+@Component("carDeposit")
+public class CarDepositJavaDelegate extends BaseJavaDelegate {
     @Override
     public OrderStatusEnum getNewOrderStatus() {
-        return OrderStatusEnum.InProgress;
+        return OrderStatusEnum.Rejected;
     }
 
     @Override

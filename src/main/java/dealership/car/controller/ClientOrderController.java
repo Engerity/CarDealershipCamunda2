@@ -332,9 +332,9 @@ public class ClientOrderController extends AbstractController {
 
         List<Order> orders;
         if (active != null && active == 1) {
-            orders = orderRepository.findAllByOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(OrderStatusEnum.activeStatuses(), userDetail.getUsername());
+            orders = orderRepository.findAllByClientOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(ClientOrderStatusEnum.activeStatuses(), userDetail.getUsername());
         } else if (active != null && active == 0) {
-            orders = orderRepository.findAllByOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(OrderStatusEnum.notActiveStatuses(), userDetail.getUsername());
+            orders = orderRepository.findAllByClientOrderStatusEnumInAndOwner_NameOrderByCreationDateDesc(ClientOrderStatusEnum.notActiveStatuses(), userDetail.getUsername());
         } else {
             orders = orderRepository.findAllByOwner_NameOrderByCreationDateDesc(userDetail.getUsername());
         }
@@ -370,7 +370,7 @@ public class ClientOrderController extends AbstractController {
         }
 
         Map<String, Object> variables = new HashMap<>();
-        variables.put("cancellationRequestCreator", "dealership");
+        variables.put("cancellationRequestCreator", "client");
         // Wyszukuje procesy po stronie salonu i wysyła wiadomość anulowania
         for (ProcessInstance processInstance : camundaProcessService.getProcessInstancesForOrderId(orderId+"", new String[]{"CAR_DEALERSHIP_SALON"}))
             camundaProcessService.createMessage("CancellationMessage", processInstance.getProcessInstanceId(), variables);
