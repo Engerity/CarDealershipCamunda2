@@ -304,11 +304,11 @@
       <bpmn:sequenceFlow id="Flow_0ec1ub9" name="Nie" sourceRef="Anulowanie_CzySamochodWProdukcji" targetRef="Anulowanie_Koniec1">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{not isCarInProduction}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:endEvent id="Anulowanie_Koniec">
+      <bpmn:endEvent id="Anulowanie_Koniec" name="Anulowanie">
         <bpmn:incoming>Flow_07btjnl</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_0v8pkzf" sourceRef="Anulowanie_WiadomoscKlient" targetRef="Anulowanie_CzyZwrocicZaliczke" />
-      <bpmn:intermediateThrowEvent id="Anulowanie_WiadomoscKlient" name="Powiadomienie o anulowaniu do klienta">
+      <bpmn:intermediateThrowEvent id="Anulowanie_WiadomoscKlient" name="Powiadomienie klienta o rozpoczęciu anulowania">
         <bpmn:incoming>Flow_0ktakcs</bpmn:incoming>
         <bpmn:outgoing>Flow_0v8pkzf</bpmn:outgoing>
         <bpmn:messageEventDefinition id="MessageEventDefinition_1lxoaff" messageRef="OrderReject" camunda:delegateExpression="${sendMessageDelegate}">
@@ -1457,11 +1457,14 @@ productionPossible == 'true'}</camunda:inputParameter>
       <bpmndi:BPMNShape id="Event_0guqwq2_di" bpmnElement="Anulowanie_WiadomoscKlient">
         <dc:Bounds x="357" y="1542" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="268" y="1550" width="84" height="40" />
+          <dc:Bounds x="277" y="1550" width="75" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_14o8myd_di" bpmnElement="Anulowanie_Koniec">
         <dc:Bounds x="862" y="1732" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="852" y="1775" width="56" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_15c1yi6_di" bpmnElement="Anulowanie_CzyZwrocicZaliczke" isMarkerVisible="true">
         <dc:Bounds x="460" y="1625" width="50" height="50" />
