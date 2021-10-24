@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class CarDepositJavaDelegate extends BaseJavaDelegate {
     @Override
     public OrderStatusEnum getNewOrderStatus() {
-        return OrderStatusEnum.Rejected;
+        return null;
     }
 
     @Override

@@ -376,11 +376,12 @@ public class ClientOrderController extends AbstractController {
             camundaProcessService.createMessage("CancellationMessage", processInstance.getProcessInstanceId(), variables);
 
         // Wyszukuje procesy po stronie klienta i wysyła wiadomość anulowania
-        for (ProcessInstance processInstance : camundaProcessService.getProcessInstancesForOrderId(orderId+"", new String[]{"CAR_DEALERSHIP_KLIENT"}))
-            camundaProcessService.createMessage("OrderRejectMessage", processInstance.getProcessInstanceId(), variables);
+        // EDIT: Nie wyszukuje, bo subprocess po stronie klienta inicjuje wiadomość z salonu
+        /*for (ProcessInstance processInstance : camundaProcessService.getProcessInstancesForOrderId(orderId+"", new String[]{"CAR_DEALERSHIP_KLIENT"}))
+            camundaProcessService.createMessage("OrderRejectMessage", processInstance.getProcessInstanceId(), variables);*/
 
-        order.setClientOrderStatusEnum(ClientOrderStatusEnum.Cancelled);
-        orderRepository.save(order);
+        //order.setClientOrderStatusEnum(ClientOrderStatusEnum.Cancelled);
+        //orderRepository.save(order);
 
         return REDIRECT_URL;
     }

@@ -33,6 +33,8 @@ public enum OrderStatusEnum {
 
     InTransport("W transporcie do salonu"),
 
+    InCancelling(ClientOrderStatusEnum.InCancelling),
+
     Rejected(ClientOrderStatusEnum.Rejected),
 
     PreparationForCollection("W przygotowaniu do wydania"),

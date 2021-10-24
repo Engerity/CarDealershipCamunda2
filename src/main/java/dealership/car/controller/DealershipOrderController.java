@@ -82,8 +82,8 @@ public class DealershipOrderController extends AbstractController {
             camundaProcessService.createMessage("CancellationMessage", processInstance.getProcessInstanceId(), variables);
         }
 
-        order.setClientOrderStatusEnum(ClientOrderStatusEnum.Cancelled);
-        orderRepository.save(order);
+        //order.setClientOrderStatusEnum(ClientOrderStatusEnum.Cancelled);
+        //orderRepository.save(order);
 
         return REDIRECT_URL;
     }

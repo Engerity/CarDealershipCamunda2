@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class DealershipOrderRejectTaskListener extends BaseTaskListener {
     @Override
     public OrderStatusEnum getNewOrderStatus() {
-        return OrderStatusEnum.Rejected;
+        return OrderStatusEnum.InCancelling;
     }
 
     @Override
