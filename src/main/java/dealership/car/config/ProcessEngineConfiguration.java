@@ -24,6 +24,7 @@ public class ProcessEngineConfiguration implements ProcessEnginePlugin {
         bpmnParseListener.add(new LoggingTransitionParseListener());
         bpmnParseListener.add(new LoggingUserTaskExecutionParseListener());
         processEngineConfiguration.setCustomPostBPMNParseListeners(bpmnParseListener);
+        processEngineConfiguration.setHistory(ProcessEngineConfigurationImpl.HISTORY_FULL);
     }
 
     @Override
