@@ -85,9 +85,9 @@ public class CamundaProcessService {
                 User cmdUser;
                 if (tmpUsr == null || tmpUsr.isEmpty()) {
                     cmdUser = identityService.newUser(user.getName());
-                    identityService.saveUser(cmdUser);
                     cmdUser.setFirstName(user.getName());
                     cmdUser.setLastName(user.getName());
+                    identityService.saveUser(cmdUser);
                 } else {
                     cmdUser = tmpUsr.get(0);
                 }
