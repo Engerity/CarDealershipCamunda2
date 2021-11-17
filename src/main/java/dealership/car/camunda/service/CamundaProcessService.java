@@ -43,10 +43,14 @@ public class CamundaProcessService {
     @Autowired
     private FormService formService;
 
-
-    public void initialGroupConfig(Iterable<? extends IUser> iterable) {
+    /**
+     * Inicjalizacja użytkowników i grup aplikacji w silniku Camunda.
+     *
+     * @param iterableUsers iterowalne dane użytkowników
+     */
+    public void initialGroupConfig(Iterable<? extends IUser> iterableUsers) {
         List<IUser> users = new ArrayList<>();
-        iterable.forEach(users::add);
+        iterableUsers.forEach(users::add);
 
         for (RoleEnum roleEnum : RoleEnum.values()) {
             String name = roleEnum.getValue();
@@ -82,6 +86,8 @@ public class CamundaProcessService {
                 if (tmpUsr == null || tmpUsr.isEmpty()) {
                     cmdUser = identityService.newUser(user.getName());
                     identityService.saveUser(cmdUser);
+                    cmdUser.setFirstName(user.getName());
+                    cmdUser.setLastName(user.getName());
                 } else {
                     cmdUser = tmpUsr.get(0);
                 }
