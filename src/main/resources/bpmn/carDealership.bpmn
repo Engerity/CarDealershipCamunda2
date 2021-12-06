@@ -681,7 +681,7 @@
           <camunda:formField id="rejectMessage" label="Wiadomość do klienta (powód odrzucenia)" type="string" defaultValue="Brak dostępnego modelu lub wariantu" />
         </camunda:formData>
         <camunda:inputOutput>
-          <camunda:inputParameter name="cancellationRequestCreator">factory</camunda:inputParameter>
+          <camunda:outputParameter name="cancellationRequestCreator">factory</camunda:outputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0y9ufqj</bpmn:incoming>
